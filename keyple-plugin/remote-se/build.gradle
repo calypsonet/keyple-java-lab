@@ -9,26 +9,33 @@ group 'org.eclipse.keyple'
 version '0.1-SNAPSHOT'
 
 apply plugin: 'java'
+apply plugin: 'java-library'
 
 sourceCompatibility = 1.6
 targetCompatibility = 1.6
 
-build.dependsOn ":keyple-core:build" //refresh keyple-core if needed
 build.finalizedBy install //install artifact in local repo
 
 dependencies {
 
-    //compile project(':keyple-calypso') why this?
-    //compile project(':keyple-core')
-
+    //use java library : keyple core
     implementation group: 'org.eclipse.keyple', name: 'keyple-core', version: '0.+'
 
     implementation 'com.google.code.gson:gson:2.8.5'
 
-    //add slf4j simple logger implementation
-    compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.25'
+    // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
+    api group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
 
+    /*
+    Tests
+     */
+
+    //add slf4j simple logger implementation
+    testCompile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.25'
+
+    // https://mvnrepository.com/artifact/junit/junit
     testCompile group: 'junit', name: 'junit', version: '4.12'
+
     // https://mvnrepository.com/artifact/org.mockito/mockito-core
     testCompile group: 'org.mockito', name: 'mockito-core', version: '2.13.0'
 
