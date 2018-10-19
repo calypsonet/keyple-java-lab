@@ -8,7 +8,7 @@
  */
 
 
-rootProject.name = 'keyple-java'
+rootProject.name = 'keyple-java-lab'
 println '** ' + rootProject.name + ' initialization phase.'
 
 include 'keyple-plugin:remote-se'
