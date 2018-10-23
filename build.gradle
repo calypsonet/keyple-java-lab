@@ -1,19 +1,30 @@
 buildscript {
     repositories {
         mavenLocal()
+        mavenCentral()
+        jcenter()
     }
 }
 
 plugins {
     id "com.diffplug.gradle.spotless" version "3.14.0"
-    id 'maven-publish'
 }
+
+
 
 subprojects {
     group 'org.eclipse.keyple'
+
+
 }
 
 allprojects {
+
+    configurations.all {
+        // check for updates every build
+        resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+    }
+
     repositories {
         mavenLocal()
         mavenCentral()
@@ -50,9 +61,15 @@ allprojects {
         ]
     }
 
-    apply plugin: 'maven'
+    task copyLICENSE(type: Copy) {
+        from file("${rootDir}/LICENSE")
+        into file("${buildDir}/resources/main/META-INF/")
+    }
 
-    apply plugin: 'maven-publish'
+    task copyNOTICE(type: Copy) {
+        from file("${rootDir}/NOTICE.md")
+        into file("${buildDir}/resources/main/META-INF/")
+    }
 
 }
 
