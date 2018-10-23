@@ -23,5 +23,8 @@ public interface RseClient extends ObservableReader.ReaderObserver {
     void connectReader(String nodeId, ProxyReader localReader, Map<String, Object> options)
             throws KeypleReaderException;
 
+    void disconnectReader(String nodeId, ProxyReader localReader)
+            throws KeypleReaderException;
+
 
 }

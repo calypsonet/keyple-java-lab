@@ -11,6 +11,7 @@ package org.eclipse.keyple.example.remote;
 
 import java.io.IOException;
 import org.eclipse.keyple.example.remote.common.TransportFactory;
+import org.eclipse.keyple.seproxy.exception.KeypleReaderException;
 import org.eclipse.keyple.seproxy.exception.KeypleReaderNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,12 +36,18 @@ public class DemoThreads {
 
                     } else {
                         DemoSlave slave = new DemoSlave(factory, true);
-                        logger.info("Wait for 10 seconds, then connect to master");
-                        Thread.sleep(10000);
+                        logger.info("Wait for 5 seconds, then connect to master");
+                        Thread.sleep(5000);
                         slave.connect();
-                        logger.info("Wait for 10 seconds, then insert SE");
-                        Thread.sleep(10000);
+                        logger.info("Wait for 5 seconds, then insert SE");
+                        Thread.sleep(5000);
                         slave.insertSe();
+                        logger.info("Wait for 5 seconds, then remove SE");
+                        Thread.sleep(5000);
+                        slave.removeSe();
+                        logger.info("Wait for 5 seconds, then disconnect reader");
+                        Thread.sleep(5000);
+                        slave.disconnect();
                     }
 
                 } catch (KeypleReaderNotFoundException e) {
@@ -48,6 +55,8 @@ public class DemoThreads {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (KeypleReaderException e) {
                     e.printStackTrace();
                 }
 
@@ -71,9 +80,15 @@ public class DemoThreads {
                     } else {
                         DemoSlave slave = new DemoSlave(factory, false);
                         slave.connect();
-                        logger.info("Wait for 10 seconds, then insert SE");
-                        Thread.sleep(15000);
+                        logger.info("Wait for 5 seconds, then insert SE");
+                        Thread.sleep(5000);
                         slave.insertSe();
+                        logger.info("Wait for 5 seconds, then remove SE");
+                        Thread.sleep(5000);
+                        slave.removeSe();
+                        logger.info("Wait for 5 seconds, then disconnect reader");
+                        Thread.sleep(5000);
+                        slave.disconnect();
                     }
 
                 } catch (KeypleReaderNotFoundException e) {
@@ -81,6 +96,8 @@ public class DemoThreads {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (KeypleReaderException e) {
                     e.printStackTrace();
                 }
 

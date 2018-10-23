@@ -155,6 +155,20 @@ public class NativeSeRemoteService implements RseClient, DtoDispatcher {
 
     }
 
+    @Override
+    public void disconnectReader(String nodeId, ProxyReader localReader) throws KeypleReaderException {
+        logger.info("disconnectReader {} {}", localReader.getName());
+
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.add("nativeReaderName", new JsonPrimitive(localReader.getName()));
+        jsonObject.add("nodeId", new JsonPrimitive(nodeId));
+
+        String data = jsonObject.toString();
+
+        dtoSender.sendDTO(new KeypleDto(KeypleDtoHelper.READER_DISCONNECT, data, true));
+
+    }
+
 
     // NseAPI
     private SeResponseSet onTransmit(String sessionId, SeRequestSet req)

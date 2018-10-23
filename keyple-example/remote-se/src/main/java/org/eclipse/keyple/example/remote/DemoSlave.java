@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.SortedSet;
+
 import org.eclipse.keyple.example.pc.calypso.stub.se.StubHoplink;
 import org.eclipse.keyple.example.remote.common.ClientNode;
 import org.eclipse.keyple.example.remote.common.ServerNode;
@@ -22,6 +23,7 @@ import org.eclipse.keyple.plugin.stub.StubPlugin;
 import org.eclipse.keyple.plugin.stub.StubReader;
 import org.eclipse.keyple.seproxy.ReaderPlugin;
 import org.eclipse.keyple.seproxy.SeProxyService;
+import org.eclipse.keyple.seproxy.exception.KeypleReaderException;
 import org.eclipse.keyple.seproxy.exception.KeypleReaderNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +35,8 @@ public class DemoSlave {
     // physical reader
     StubReader localReader;
     private TransportNode node;
+    private NativeSeRemoteService seRemoteService;
+    private String nodeId = "node1";
 
     public DemoSlave(TransportFactory transportFactory, Boolean isServer) {
         logger.info("*******************");
@@ -64,7 +68,6 @@ public class DemoSlave {
 
 
         logger.info("Boot DemoSlave LocalReader ");
-        String nodeId = "node1";
 
         // get seProxyService
         SeProxyService seProxyService = SeProxyService.getInstance();
@@ -81,7 +84,7 @@ public class DemoSlave {
         // get the created proxy reader
         localReader = (StubReader) stubPlugin.getReader("stubClientSlave");
 
-        NativeSeRemoteService seRemoteService = new NativeSeRemoteService(node);// ougoing traffic
+        seRemoteService = new NativeSeRemoteService(node);// ougoing traffic
         seRemoteService.bindDtoEndpoint(node);// incoming traffic
 
         Map<String, Object> options = new HashMap<String, Object>();
@@ -100,14 +103,28 @@ public class DemoSlave {
         // insert SE
         localReader.insertSe(new StubHoplink());
 
-        // todo Remove SE
-        // logger.info("************************");
-        // logger.info(" remove SE ");
-        // logger.info("************************");
-        //
-        // localReader.removeSe();
 
     }
+
+    public void removeSe(){
+
+        logger.info("************************");
+        logger.info(" remove SE ");
+        logger.info("************************");
+
+        localReader.removeSe();
+
+    }
+
+    public void disconnect() throws KeypleReaderException {
+
+        logger.info("*************************");
+        logger.info("Disconnect native reader ");
+        logger.info("*************************");
+
+        seRemoteService.disconnectReader(nodeId, localReader);
+    }
+
 
 
 

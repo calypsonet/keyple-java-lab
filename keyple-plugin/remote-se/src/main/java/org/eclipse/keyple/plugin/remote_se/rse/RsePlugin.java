@@ -26,17 +26,17 @@ import org.slf4j.LoggerFactory;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
-public class RsePlugin extends Observable implements ObservablePlugin, DtoDispatcher {
+public class RsePlugin extends Observable implements ObservablePlugin {
 
     private static final Logger logger = LoggerFactory.getLogger(RsePlugin.class);
 
-    private final RseSessionManager sessionManager;
+    //private final RseSessionManager sessionManager;
 
     // virtal readers
     private final SortedSet<RseReader> rseReaders = new TreeSet<RseReader>();
 
     public RsePlugin() {
-        sessionManager = new RseSessionManager();
+        //sessionManager = new RseSessionManager();
         logger.info("RemoteSePlugin");
     }
 
@@ -91,7 +91,7 @@ public class RsePlugin extends Observable implements ObservablePlugin, DtoDispat
      * @param session
      * @return
      */
-    private void connectRemoteReader(String name, IReaderSession session) {
+    protected void connectRemoteReader(String name, IReaderSession session) {
         logger.debug("connectRemoteReader {}", name);
 
         // check if reader is not already connected (by name)
@@ -113,7 +113,35 @@ public class RsePlugin extends Observable implements ObservablePlugin, DtoDispat
         // todo errors
     }
 
-    private void onReaderEvent(ReaderEvent event, String sessionId) {
+    /**
+     * Delete a virtual reader
+     *
+     * @param name
+     * @return
+     */
+    protected void disconnectRemoteReader(String name) throws KeypleReaderNotFoundException {
+        logger.debug("disconnectRemoteReader {}", name);
+
+        // check if reader is not already connected (by name)
+        if (isReaderConnected(name)) {
+            logger.info("DisconnectRemoteReader RemoteSeReader with name {} with session {}", name);
+
+            rseReaders.remove(this.getReaderByRemoteName(name));
+
+            notifyObservers(new PluginEvent(getName(), name,
+                    PluginEvent.EventType.READER_DISCONNECTED));
+
+            logger.info("*****************************");
+            logger.info(" DISCONNECTED {} ", name);
+            logger.info("*****************************");
+
+        } else {
+            logger.warn("RemoteSeReader with name {} is already connected", name);
+        }
+        // todo errors
+    }
+
+    protected void onReaderEvent(ReaderEvent event, String sessionId) {
         logger.debug("OnReaderEvent {}", event);
         logger.debug("Dispatch ReaderEvent to the appropriate Reader {} {}", event.getReaderName(),
                 sessionId);
@@ -187,109 +215,10 @@ public class RsePlugin extends Observable implements ObservablePlugin, DtoDispat
     }
 
 
-    // called by node transport
-    @Override
-    public TransportDto onDTO(TransportDto transportDto) {
-
-        KeypleDto keypleDTO = transportDto.getKeypleDTO();
-        TransportDto out = null;
-        logger.debug("onDTO {}", KeypleDtoHelper.toJson(transportDto.getKeypleDTO()));
-
-
-        // if (msg.getHash()!=null && !KeypleDtoHelper.verifyHash(msg, msg.getHash())) {
-        // return exception, msg is signed but has is invalid
-        // }
-
-        // READER EVENT : SE_INSERTED, SE_REMOVED etc..
-        if (keypleDTO.getAction().equals(KeypleDtoHelper.READER_EVENT)) {
-            logger.info("**** ACTION - READER_EVENT ****");
-
-            ReaderEvent event =
-                    JsonParser.getGson().fromJson(keypleDTO.getBody(), ReaderEvent.class);
-
-            // dispatch reader event
-            this.onReaderEvent(event, keypleDTO.getSessionId());
-
-            // chain response with a seRequest if needed
-            out = isSeRequestToSendBack(transportDto);
-
-        } else if (keypleDTO.getAction().equals(KeypleDtoHelper.READER_CONNECT)) {
-            logger.info("**** ACTION - READER_CONNECT ****");
-
-            // parse msg
-            JsonObject body = JsonParser.getGson().fromJson(keypleDTO.getBody(), JsonObject.class);
-            String readerName = body.get("nativeReaderName").getAsString();
-            Boolean isAsync = body.get("isAsync").getAsBoolean();
-            String nodeId = body.get("nodeId").getAsString();
-
-
-            String sessionId = sessionManager.generateSessionId(readerName, nodeId);
-            IReaderSession rseSession;// reader session
-
-            if (!isAsync) {
-                // todo
-                logger.error("Rse Plugin supports only Async session");
-                throw new IllegalArgumentException("Rse Plugin needs a Async Session to work");
-            } else {
-                // rseSession = new ReaderAsyncSessionImpl(sessionId, message.getDtoSender());
-                rseSession = new ReaderAsyncSessionImpl(sessionId);
-                // add the web socket node as an observer for the session as the session will send
-                // KeypleDto
-                ((ReaderAsyncSessionImpl) rseSession).addObserver(transportDto.getDtoSender());
-
-                this.connectRemoteReader(readerName, rseSession);
-            }
-
-
-            // response
-            JsonObject respBody = new JsonObject();
-            respBody.add("statusCode", new JsonPrimitive(0));
-            respBody.add("nativeReaderName", new JsonPrimitive(readerName));
-            out = transportDto.nextTransportDTO(new KeypleDto(KeypleDtoHelper.READER_CONNECT,
-                    respBody.toString(), false, sessionId));
-
-        } else if (keypleDTO.getAction().equals(KeypleDtoHelper.READER_DISCONNECT)) {
-            logger.info("**** ACTION - READER_DISCONNECT ****");
-
-            // not implemented yet
-            out = transportDto.nextTransportDTO(KeypleDtoHelper.NoResponse());
-
-        } else if (keypleDTO.getAction().equals(KeypleDtoHelper.READER_TRANSMIT)
-                && !keypleDTO.isRequest()) {
-            logger.info("**** RESPONSE - READER_TRANSMIT ****");
-
-            // parse msg
-            SeResponseSet seResponseSet =
-                    JsonParser.getGson().fromJson(keypleDTO.getBody(), SeResponseSet.class);
-            logger.debug("Receive responseSet from transmit {}", seResponseSet);
-            RseReader reader = null;
-            try {
-                reader = this.getReaderBySessionId(keypleDTO.getSessionId());
-                ((IReaderAsyncSession) reader.getSession()).asyncSetSeResponseSet(seResponseSet);
-
-                // chain response with a seRequest if needed
-                out = isSeRequestToSendBack(transportDto);
-
-            } catch (KeypleReaderNotFoundException e) {
-                e.printStackTrace();
-                out = transportDto.nextTransportDTO(KeypleDtoHelper.ErrorDTO());
-            }
-        } else {
-            logger.info("**** ERROR - UNRECOGNIZED ****");
-            logger.error("Receive unrecognized message action : {} {} {} {}", keypleDTO.getAction(),
-                    keypleDTO.getSessionId(), keypleDTO.getBody(), keypleDTO.isRequest());
-            out = transportDto.nextTransportDTO(KeypleDtoHelper.NoResponse());
-        }
-
-        logger.debug("onDTO response {}", KeypleDtoHelper.toJson(out.getKeypleDTO()));
-        return out;
-
-
-    }
 
 
 
-    private TransportDto isSeRequestToSendBack(TransportDto tdto) {
+    protected TransportDto isSeRequestToSendBack(TransportDto tdto) {
         TransportDto out = null;
         try {
             // retrieve reader by session
@@ -317,7 +246,7 @@ public class RsePlugin extends Observable implements ObservablePlugin, DtoDispat
     }
 
 
-    private RseReader getReaderBySessionId(String sessionId) throws KeypleReaderNotFoundException {
+    protected RseReader getReaderBySessionId(String sessionId) throws KeypleReaderNotFoundException {
         for (RseReader reader : rseReaders) {
             if (reader.getSession().getSessionId().equals(sessionId)) {
                 return reader;
