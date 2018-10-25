@@ -46,8 +46,8 @@ public class EndpointPolling implements HttpHandler, TransportNode {
     @Override
     public void handle(HttpExchange t) throws IOException {
 
-        logger.trace("Incoming HttpExchange {} ", t.toString());
-        logger.trace("Incoming Request {} ", t.getRequestMethod());
+        logger.debug("Incoming HttpExchange {} ", t.toString());
+        logger.debug("Incoming Request {} ", t.getRequestMethod());
         String requestMethod = t.getRequestMethod();
 
         if (requestMethod.equals("GET")) {
@@ -57,14 +57,12 @@ public class EndpointPolling implements HttpHandler, TransportNode {
             String nodeId = params.get("clientNodeId");
             // logger.trace("param clientNodeId=" + params.get("clientNodeId"));
 
-            logger.trace(
+            logger.debug(
                     "Receive a polling request {} for clientNodeId {}, add it to the queue, queue size before adding {}",
                     t.toString(), nodeId, requestQueue.size());
 
             // set httpExchange in queue
             requestQueue.add(t);
-
-            // setHttpResponse(t, KeypleDtoHelper.ACK());
 
         }
     }
@@ -86,7 +84,7 @@ public class EndpointPolling implements HttpHandler, TransportNode {
 
     @Override
     public void sendDTO(KeypleDto message) {
-        logger.info("Using polling to send keypleDTO {}", KeypleDtoHelper.toJson(message));
+        logger.debug("Using polling to send keypleDTO {}", KeypleDtoHelper.toJson(message));
 
         synchronized (requestQueue) {
             logger.debug("Polling Queue size {}", requestQueue.size());

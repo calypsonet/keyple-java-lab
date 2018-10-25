@@ -58,15 +58,15 @@ public class WsPClient implements ClientNode {
                 // Boolean exit = false;
                 while (true) {
                     try {
-                        logger.trace("Polling clientNodeId {}", nodeId);
+                        logger.debug("Polling clientNodeId {}", nodeId);
                         JsonObject httpResponse = httpPoll(
                                 getConnection(baseUrl+pollingEndpoint + "?clientNodeId=" + nodeId),
                                 "{}");
-                        logger.trace("Polling for clientNodeId {} receive a httpResonse {}", nodeId,
+                        logger.debug("Polling for clientNodeId {} receive a httpResponse {}", nodeId,
                                 httpResponse);
                         processHttpResponseDTO(httpResponse);
                     } catch (IOException e) {
-                        logger.trace(
+                        logger.debug(
                                 "Polling for clientNodeId {} didn't receive any response, send it again ");
                         // e.printStackTrace();
                     }
@@ -194,13 +194,8 @@ public class WsPClient implements ClientNode {
         conn.setRequestProperty("Accept", "application/json");
         conn.connect();
 
-        OutputStreamWriter osw = new OutputStreamWriter(conn.getOutputStream());
-        osw.write(json);
-        osw.flush();
-        osw.close();
-
-        conn.setConnectTimeout(70000);
-        conn.setReadTimeout(70000);
+        conn.setConnectTimeout(10000);
+        conn.setReadTimeout(10000);
 
         int responseCode = conn.getResponseCode();
         logger.trace("Response code {}", responseCode);

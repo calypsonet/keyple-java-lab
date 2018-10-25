@@ -14,7 +14,8 @@ import org.eclipse.keyple.example.remote.wspolling.client_retrofit.WsPollingRetr
 
 public class DemoWsPRetrofitMasterServer {
 
-    //polling is lost
+
+    //works
 
     public static void main(String[] args) throws Exception {
 

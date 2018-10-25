@@ -18,18 +18,14 @@ public class DemoWsPRetrofitMasterClient {
 
     public static void main(String[] args) throws Exception {
 
-        Boolean isRetrofit= true;
         Boolean isTransmitSync = true; // is Transmit API Blocking or Not Blocking
         Boolean isMasterServer = false; // DemoMaster is the Client (and DemoSlave the server)
 
 
         TransportFactory factory;
 
-        if(isRetrofit){
             factory = new WsPollingRetrofitFactory(); // HTTP Web Polling with Android compatible retrofit Library
-        }else{
-            factory = new WsPollingFactory(); // HTTP Web Polling
-        }
+
 
 
         /**
