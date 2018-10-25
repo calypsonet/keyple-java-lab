@@ -12,9 +12,10 @@ import org.eclipse.keyple.seproxy.SeRequestSet;
 import org.eclipse.keyple.seproxy.SeResponseSet;
 import org.eclipse.keyple.seproxy.exception.KeypleReaderException;
 
+@Deprecated
 interface NseAPI {
 
-    SeResponseSet onTransmit(String sessionId, SeRequestSet req) throws KeypleReaderException;
+    SeResponseSet onTransmit(String nativeReaderName, String sessionId, SeRequestSet req) throws KeypleReaderException;
 
     // String onGetName();
 

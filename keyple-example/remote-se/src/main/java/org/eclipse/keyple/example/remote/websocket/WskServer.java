@@ -20,6 +20,9 @@ import org.java_websocket.server.WebSocketServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Web socket server
+ */
 public class WskServer extends WebSocketServer implements ServerNode {
 
     private static final Logger logger = LoggerFactory.getLogger(WskServer.class);
@@ -28,10 +31,12 @@ public class WskServer extends WebSocketServer implements ServerNode {
     // only for when server is slave
     private Boolean isSlave;
     private WebSocket masterWebSocket;
+    String nodeId;
 
-    public WskServer(InetSocketAddress address, Boolean isSlave) {
+    public WskServer(InetSocketAddress address, Boolean isSlave, String nodeId) {
         super(address);
         this.isSlave = isSlave;
+        this.nodeId = nodeId;
     }
 
     /*
@@ -149,6 +154,11 @@ public class WskServer extends WebSocketServer implements ServerNode {
         logger.trace("Web socket sendDTO without predefined socket {}",
                 KeypleDtoHelper.toJson(message));
         this.sendDTO(new WskTransportDTO(message, null));
+    }
+
+    @Override
+    public String getNodeId() {
+        return nodeId;
     }
 
 

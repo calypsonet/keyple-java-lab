@@ -8,7 +8,6 @@
 
 package org.eclipse.keyple.plugin.remote_se.rse;
 
-import java.util.Map;
 import org.eclipse.keyple.seproxy.*;
 import org.eclipse.keyple.seproxy.event.ObservableReader;
 import org.eclipse.keyple.seproxy.event.ReaderEvent;
@@ -17,27 +16,45 @@ import org.eclipse.keyple.util.Observable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
 
+/**
+ * Virtual Reader
+ * Behaves like the Remote Reader it emulates
+ */
 public class RseReader extends Observable implements ObservableReader {
 
-    private final IReaderSession session;// can be sync or async
+    private final IReaderSession session;
     private final String remoteName;
     private final String name;
 
     private static final Logger logger = LoggerFactory.getLogger(RseReader.class);
 
-    public RseReader(IReaderSession session, String remoteName) {
+    /**
+     * Called by {@link RsePlugin}
+     * @param session
+     * @param remoteName
+     */
+    RseReader(IReaderSession session, String remoteName) {
         this.session = session;
         this.remoteName = remoteName;
         this.name = "remote-" + remoteName;
     }
 
+    /**
+     * Local name of the virtual reader
+     * @return
+     */
     @Override
     public String getName() {
         return name;
     }
 
-    public String getRemoteName() {
+    /**
+     * Name of the Native Reader
+     * @return
+     */
+    public String getNativeReaderName() {
         return remoteName;
     }
 
@@ -60,12 +77,12 @@ public class RseReader extends Observable implements ObservableReader {
      */
     @Override
     public SeResponseSet transmit(SeRequestSet seRequestSet) throws IllegalArgumentException {
-        return ((IReaderAsyncSession) session).transmit(seRequestSet);
+        return session.transmit(this.getNativeReaderName(), this.getName(), seRequestSet);
     }
 
     @Override
     public SeResponse transmit(SeRequest seApplicationRequest) throws IllegalArgumentException {
-        return ((IReaderAsyncSession) session).transmit(new SeRequestSet(seApplicationRequest))
+        return  session.transmit(this.getNativeReaderName(), this.getName(), new SeRequestSet(seApplicationRequest))
                 .getSingleResponse();
     }
 
@@ -78,7 +95,7 @@ public class RseReader extends Observable implements ObservableReader {
      */
     public void asyncTransmit(SeRequestSet seRequestSet,
             ISeResponseSetCallback seResponseSetCallback) throws IllegalArgumentException {
-        ((IReaderAsyncSession) session).asyncTransmit(seRequestSet, seResponseSetCallback);
+        session.asyncTransmit(this.getNativeReaderName(), this.getName(), seRequestSet, seResponseSetCallback);
     }
 
     @Override
@@ -87,12 +104,16 @@ public class RseReader extends Observable implements ObservableReader {
 
     }
 
+    /*
+    PACKAGE PRIVATE
+     */
+
     /**
      * When an event occurs on the Remote LocalReader, notify Observers
      * 
      * @param event
      */
-    public void onRemoteReaderEvent(ReaderEvent event) {
+    void onRemoteReaderEvent(ReaderEvent event) {
         logger.info("*****************************");
         logger.info(" EVENT {} ", event.getEventType());
         logger.info("*****************************");

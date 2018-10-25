@@ -13,6 +13,10 @@ import org.eclipse.keyple.example.remote.websocket.WskFactory;
 
 public class DemoWsKMasterClient {
 
+   /*
+    Exception in thread "Thread-0" java.lang.NullPointerException
+    at org.eclipse.keyple.example.remote.websocket.WskServer.sendDTO(WskServer.java:125)
+*/
 
     public static void main(String[] args) throws Exception {
 

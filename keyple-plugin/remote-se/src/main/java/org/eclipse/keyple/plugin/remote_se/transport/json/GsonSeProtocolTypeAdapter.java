@@ -9,11 +9,12 @@
 package org.eclipse.keyple.plugin.remote_se.transport.json;
 
 
-import java.lang.reflect.Type;
+import com.google.gson.*;
 import org.eclipse.keyple.seproxy.SeProtocol;
 import org.eclipse.keyple.seproxy.protocol.ContactlessProtocols;
 import org.eclipse.keyple.seproxy.protocol.ContactsProtocols;
-import com.google.gson.*;
+
+import java.lang.reflect.Type;
 
 class GsonSeProtocolTypeAdapter
         implements JsonDeserializer<SeProtocol>, JsonSerializer<SeProtocol> {

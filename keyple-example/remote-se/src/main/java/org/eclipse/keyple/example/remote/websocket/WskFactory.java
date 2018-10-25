@@ -19,7 +19,9 @@ import org.eclipse.keyple.example.remote.common.TransportFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
+/**
+ * Web socket factory, by default works at localhost
+ */
 @SuppressWarnings("PMD.AvoidUsingHardCodedIP")
 public class WskFactory extends TransportFactory {
 
@@ -27,6 +29,7 @@ public class WskFactory extends TransportFactory {
     String keypleUrl = "/keypleDTO";
     String bindUrl = "0.0.0.0";
     String protocol = "http://";
+    String clientNodeId = "local1";
 
     private static final Logger logger = LoggerFactory.getLogger(WskFactory.class);
 
@@ -39,7 +42,7 @@ public class WskFactory extends TransportFactory {
 
         ClientNode wskClient = null;
         try {
-            wskClient = new WskClient(new URI(protocol + "localhost:" + port + keypleUrl));
+            wskClient = new WskClient(new URI(protocol + "localhost:" + port + keypleUrl),clientNodeId);
             // wskClient.connect();
             return wskClient;
         } catch (URISyntaxException e) {
@@ -55,7 +58,7 @@ public class WskFactory extends TransportFactory {
         logger.info("*** Create Websocket Server ***");
 
         InetSocketAddress inet = new InetSocketAddress(Inet4Address.getByName(bindUrl), port);
-        WskServer wskServer = new WskServer(inet, !isMaster);
+        WskServer wskServer = new WskServer(inet, !isMaster,clientNodeId+"server");
         return wskServer;
     }
 }

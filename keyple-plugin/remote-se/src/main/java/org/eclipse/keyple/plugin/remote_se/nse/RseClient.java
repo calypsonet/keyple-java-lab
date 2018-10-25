@@ -8,10 +8,11 @@
 
 package org.eclipse.keyple.plugin.remote_se.nse;
 
-import java.util.Map;
 import org.eclipse.keyple.seproxy.ProxyReader;
 import org.eclipse.keyple.seproxy.event.ObservableReader;
 import org.eclipse.keyple.seproxy.exception.KeypleReaderException;
+
+import java.util.Map;
 
 public interface RseClient extends ObservableReader.ReaderObserver {
 

@@ -12,13 +12,13 @@ import org.eclipse.keyple.example.remote.common.TransportFactory;
 import org.eclipse.keyple.example.remote.wspolling.WsPollingFactory;
 import org.eclipse.keyple.example.remote.wspolling.client_retrofit.WsPollingRetrofitFactory;
 
-public class DemoWsPMasterClient {
+public class DemoWsPRetrofitMasterClient {
 
-    //polling is lost
+    //works
 
     public static void main(String[] args) throws Exception {
 
-        Boolean isRetrofit= false;
+        Boolean isRetrofit= true;
         Boolean isTransmitSync = true; // is Transmit API Blocking or Not Blocking
         Boolean isMasterServer = false; // DemoMaster is the Client (and DemoSlave the server)
 

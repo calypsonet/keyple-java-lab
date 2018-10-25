@@ -8,6 +8,7 @@
 
 package org.eclipse.keyple.example.remote.wspolling;
 
+import org.eclipse.keyple.example.remote.wspolling.client.WsPClient;
 import org.eclipse.keyple.plugin.remote_se.transport.DtoDispatcher;
 import org.eclipse.keyple.plugin.remote_se.transport.KeypleDtoHelper;
 import org.eclipse.keyple.plugin.remote_se.transport.TransportDto;
@@ -18,15 +19,16 @@ public class Client {
 
     private static final Logger logger = LoggerFactory.getLogger(Client.class);
 
-    private static String ENDPOINT_URL = "http://localhost:8004/keypleDTO";
-    private static String POLLING_URL = "http://localhost:8004/polling";
+    private static String BASE_URL = "http://localhost:8004";
+    private static String ENDPOINT_URL = "/keypleDTO";
+    private static String POLLING_URL = "/polling";
 
 
 
     void boot() {
 
 
-        WsPClient client = new WsPClient(ENDPOINT_URL, POLLING_URL, "test1");
+        WsPClient client = new WsPClient(BASE_URL,ENDPOINT_URL, POLLING_URL, "test1");
         client.startPollingWorker("node1");
         client.setDtoDispatcher(new DtoDispatcher() {
             @Override

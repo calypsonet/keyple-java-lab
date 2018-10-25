@@ -6,22 +6,23 @@
  * available at https://www.eclipse.org/org/documents/epl-2.0/EPL-2.0.html
  */
 
-package org.eclipse.keyple.example.remote.wspolling;
+package org.eclipse.keyple.example.remote.wspolling.client_retrofit;
 
-import java.io.IOException;
 import org.eclipse.keyple.example.remote.common.ClientNode;
 import org.eclipse.keyple.example.remote.common.ServerNode;
 import org.eclipse.keyple.example.remote.common.TransportFactory;
-import org.eclipse.keyple.example.remote.wspolling.client.WsPClient;
 import org.eclipse.keyple.example.remote.wspolling.server.WsPServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+
 /**
- * Web service factory, get {@link WsPClient} and {@link WsPServer}
+ * Web service factory, get @{@link org.eclipse.keyple.example.remote.wspolling.client_retrofit.WsPRetrofitClient} and {@link WsPServer}
+ * Optimized for Android and Java
  */
 @SuppressWarnings("PMD.AvoidUsingHardCodedIP")
-public class WsPollingFactory extends TransportFactory {
+public class WsPollingRetrofitFactory extends TransportFactory {
 
     Integer port = 8007;
     String pollingUrl = "/polling";
@@ -31,11 +32,11 @@ public class WsPollingFactory extends TransportFactory {
     String bindUrl = "0.0.0.0";
     String protocol = "http://";
 
-    private static final Logger logger = LoggerFactory.getLogger(WsPollingFactory.class);
+    private static final Logger logger = LoggerFactory.getLogger(WsPollingRetrofitFactory.class);
 
-    public WsPollingFactory(){}
+    public WsPollingRetrofitFactory(){}
 
-    public WsPollingFactory(Integer port, String pollingUrl, String keypleUrl, String clientNodeId, String bindUrl, String protocol) {
+    public WsPollingRetrofitFactory(Integer port, String pollingUrl, String keypleUrl, String clientNodeId, String bindUrl, String protocol) {
         this.port = port;
         this.pollingUrl = pollingUrl;
         this.keypleUrl = keypleUrl;
@@ -46,10 +47,12 @@ public class WsPollingFactory extends TransportFactory {
 
     @Override
     public ClientNode getClient(Boolean isMaster) {
-        logger.info("*** Create Ws Polling Client ***");
-        WsPClient client = new WsPClient(protocol + bindUrl+":" + port ,keypleUrl, pollingUrl, clientNodeId);
-        return client;
+
+        logger.info("*** Create RETROFIT Ws Polling Client ***");
+        return new org.eclipse.keyple.example.remote.wspolling.client_retrofit.WsPRetrofitClient(protocol + bindUrl+":" + port , keypleUrl,
+                pollingUrl, clientNodeId);
     }
+
 
 
     @Override

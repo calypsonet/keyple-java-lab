@@ -10,6 +10,9 @@ package org.eclipse.keyple.example.remote.common;
 
 import java.io.IOException;
 
+/**
+ * Factory for Clients and Servers sharing a protocol and a configuration to connect each others
+ */
 public abstract class TransportFactory {
 
     abstract public ClientNode getClient(Boolean isMaster);

@@ -8,8 +8,8 @@
 
 package org.eclipse.keyple.plugin.remote_se.transport;
 
-import org.eclipse.keyple.plugin.remote_se.transport.json.JsonParser;
 import com.google.gson.JsonObject;
+import org.eclipse.keyple.plugin.remote_se.transport.json.JsonParser;
 
 /**
  * Utility class to manipulate KeypleDto
@@ -45,8 +45,12 @@ public class KeypleDtoHelper {
         return new KeypleDto("ACK", "", false);// todo statuscode
     }
 
+    static public Boolean isACK(KeypleDto keypleDto) {
+        return keypleDto.getAction().equals("ACK");
+    }
+
     static public Boolean isNoResponse(KeypleDto dto) {
-        return dto.getAction().isEmpty();
+        return dto==null || dto.getAction() ==null || dto.getAction().isEmpty();
     }
 
     static public Boolean isKeypleDTO(String json) {

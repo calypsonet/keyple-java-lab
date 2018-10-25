@@ -8,14 +8,16 @@
 
 package org.eclipse.keyple.plugin.remote_se.nse;
 
+import org.eclipse.keyple.seproxy.exception.KeypleReaderNotFoundException;
+
 import java.util.HashMap;
 import java.util.Map;
-import org.eclipse.keyple.seproxy.exception.KeypleReaderNotFoundException;
 
 
 /**
  * Manages binding between readerName and a Master SessionId
  */
+@Deprecated
 class NseSessionManager {
 
     private final Map<String, String> readerName_sessionId;
@@ -41,7 +43,7 @@ class NseSessionManager {
                 return readerName;
             }
         }
-        throw new KeypleReaderNotFoundException("Reader not found by sessionId");
+        throw new KeypleReaderNotFoundException("[by sessionId : " + sessionId + "]");
     }
 
 }

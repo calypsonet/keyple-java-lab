@@ -17,13 +17,17 @@ import org.java_websocket.handshake.ServerHandshake;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Web socket client
+ */
 public class WskClient extends WebSocketClient implements ClientNode {
 
     private static final Logger logger = LoggerFactory.getLogger(WskClient.class);
     DtoDispatcher dtoDispatcher;
+    String nodeId;
 
-    public WskClient(URI url) {
-        super(url);
+    public WskClient(URI url, String nodeId) {
+        super(url); this.nodeId = nodeId;
     }
 
     @Override
@@ -72,6 +76,11 @@ public class WskClient extends WebSocketClient implements ClientNode {
         } else {
             logger.debug("No message to send back");
         }
+    }
+
+    @Override
+    public String getNodeId() {
+        return nodeId;
     }
 
     @Override

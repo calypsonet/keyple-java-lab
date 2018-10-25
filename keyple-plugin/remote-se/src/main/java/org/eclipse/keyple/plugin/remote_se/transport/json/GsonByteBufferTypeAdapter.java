@@ -8,23 +8,23 @@
 
 package org.eclipse.keyple.plugin.remote_se.transport.json;
 
-import java.lang.reflect.Type;
-import java.nio.ByteBuffer;
-import org.eclipse.keyple.util.ByteBufferUtils;
 import com.google.gson.*;
+import org.eclipse.keyple.util.ByteArrayUtils;
+
+import java.lang.reflect.Type;
 
 class GsonByteBufferTypeAdapter
-        implements JsonDeserializer<ByteBuffer>, JsonSerializer<ByteBuffer> {
+        implements JsonDeserializer<byte[]>, JsonSerializer<byte[]> {
 
     @Override
-    public JsonElement serialize(ByteBuffer src, Type typeOfSrc, JsonSerializationContext context) {
-        return new JsonPrimitive(ByteBufferUtils.toHex(src));
+    public JsonElement serialize(byte[] src, Type typeOfSrc, JsonSerializationContext context) {
+        return new JsonPrimitive(ByteArrayUtils.toHex(src));
     }
 
     @Override
-    public ByteBuffer deserialize(JsonElement json, Type typeOfT,
+    public byte[] deserialize(JsonElement json, Type typeOfT,
             JsonDeserializationContext context) throws JsonParseException {
-        return ByteBufferUtils.fromHex(json.getAsString());
+        return ByteArrayUtils.fromHex(json.getAsString());
     }
 
 

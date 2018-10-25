@@ -16,7 +16,7 @@ import org.eclipse.keyple.seproxy.SeResponseSet;
 public interface ISeResponseSetCallback {
 
     /**
-     * Callback function called when SeResponseSet is received
+     * Callback called when SeResponseSet is received
      * 
      * @param seResponseSet
      */

@@ -29,4 +29,6 @@ public interface DtoSender extends Observable.Observer<KeypleDto> {
      */
     void sendDTO(KeypleDto message);
 
+    String getNodeId();
+
 }

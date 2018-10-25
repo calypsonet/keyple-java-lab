@@ -9,10 +9,55 @@
 package org.eclipse.keyple.plugin.remote_se.rse;
 
 
+import org.eclipse.keyple.seproxy.SeRequestSet;
+import org.eclipse.keyple.seproxy.SeResponseSet;
+
 public interface IReaderSession {
 
+    /**
+     * Retrieve sessionId
+     * @return sessionId
+     */
     String getSessionId();
 
-    Boolean isAsync();
+    /**
+     * Non-blocking transmit
+     * @param nativeReaderName : local reader to transmit to
+     * @param virtualReaderName : virtual reader thats receive the order the transmit to
+     * @param seApplicationRequest : seApplicationRequest to transmit
+     * @param seResponseSet : callback that receives the SeResponseSet when received
+     */
+    void asyncTransmit(String nativeReaderName, String virtualReaderName, SeRequestSet seApplicationRequest, ISeResponseSetCallback seResponseSet);
+
+    /**
+     * Blocking transmit
+     * @param nativeReaderName : local reader to transmit to
+     * @param virtualReaderName : virtual reader thats receive the order the transmit to
+     * @param seApplicationRequest : seApplicationRequest to transmit
+     * @return SeResponseSet
+     */
+    SeResponseSet transmit(String nativeReaderName, String virtualReaderName, SeRequestSet seApplicationRequest);
+
+
+
+    /**
+     * Send response in callback
+     * @param seResponseSet : receive seResponseSet to be callback
+     */
+    void asyncSetSeResponseSet(SeResponseSet seResponseSet);
+
+    /**
+     * Has a seRequestSet in session (being transmitted)
+     * @return true if a seRequestSet is being transmitted
+     */
+    Boolean hasSeRequestSet();
+
+    /**
+     * Get the seRequestSet being transmitted
+     * @return seRequestSet transmitted
+     */
+    SeRequestSet getSeRequestSet();
+
+
 
 }

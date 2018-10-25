@@ -13,6 +13,9 @@ import org.eclipse.keyple.plugin.remote_se.transport.KeypleDto;
 import org.eclipse.keyple.plugin.remote_se.transport.TransportDto;
 import org.java_websocket.WebSocket;
 
+/**
+ * Web socket Transport DTO
+ */
 public class WskTransportDTO implements TransportDto {
 
     public KeypleDto getDto() {

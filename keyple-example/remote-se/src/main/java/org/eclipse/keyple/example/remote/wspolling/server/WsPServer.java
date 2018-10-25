@@ -6,7 +6,7 @@
  * available at https://www.eclipse.org/org/documents/epl-2.0/EPL-2.0.html
  */
 
-package org.eclipse.keyple.example.remote.wspolling;
+package org.eclipse.keyple.example.remote.wspolling.server;
 
 import java.io.IOException;
 import java.net.Inet4Address;
@@ -28,6 +28,7 @@ public class WsPServer implements ServerNode {
     private InetSocketAddress inet;
     private String apiUrl;
     private String pollingUrl;
+    private String nodeId;
 
     private HttpServer server;
     static private Integer MAX_CONNECTION = 5;
@@ -47,18 +48,19 @@ public class WsPServer implements ServerNode {
      * @param pollingUrl
      * @throws IOException
      */
-    public WsPServer(String url, Integer port, String apiUrl, String pollingUrl)
+    public WsPServer(String url, Integer port, String apiUrl, String pollingUrl, String nodeId)
             throws IOException {
         logger.info("Init Web Service DemoMaster on url : {}:{}", url, port);
 
+        this.nodeId = nodeId;
         this.apiUrl = apiUrl;
         this.pollingUrl = pollingUrl;
 
         // Create Endpoint for polling DTO
-        pollingEndpoint = new EndpointPolling(requestQueue);
+        pollingEndpoint = new EndpointPolling(requestQueue, nodeId);
 
         // Create Endpoint for sending DTO
-        keypleDTOEndpoint = new EndpointKeypleDTO((DtoSender) pollingEndpoint);
+        keypleDTOEndpoint = new EndpointKeypleDTO((DtoSender) pollingEndpoint, nodeId);
 
 
         // deploy endpoint
@@ -89,6 +91,11 @@ public class WsPServer implements ServerNode {
     @Override
     public void setDtoDispatcher(DtoDispatcher receiver) {
         ((EndpointKeypleDTO) this.keypleDTOEndpoint).setDtoDispatcher(receiver);;
+    }
+
+    @Override
+    public String getNodeId() {
+        return nodeId;
     }
 
     @Override

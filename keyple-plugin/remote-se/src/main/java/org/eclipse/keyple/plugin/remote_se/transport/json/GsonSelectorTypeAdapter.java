@@ -8,10 +8,11 @@
 
 package org.eclipse.keyple.plugin.remote_se.transport.json;
 
-import java.lang.reflect.Type;
+import com.google.gson.*;
 import org.eclipse.keyple.seproxy.SeRequest;
 import org.eclipse.keyple.util.ByteArrayUtils;
-import com.google.gson.*;
+
+import java.lang.reflect.Type;
 
 class GsonSelectorTypeAdapter
         implements JsonDeserializer<SeRequest.Selector>, JsonSerializer<SeRequest.Selector> {

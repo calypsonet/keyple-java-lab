@@ -6,10 +6,14 @@
  * available at https://www.eclipse.org/org/documents/epl-2.0/EPL-2.0.html
  */
 
-package org.eclipse.keyple.example.remote.wspolling;
+package org.eclipse.keyple.example.remote.wspolling.server;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Scanner;
+
+import org.eclipse.keyple.example.remote.wspolling.WsPTransportDTO;
 import org.eclipse.keyple.plugin.remote_se.transport.*;
 import org.eclipse.keyple.plugin.remote_se.transport.TransportDto;
 import org.eclipse.keyple.plugin.remote_se.transport.TransportNode;
@@ -18,6 +22,10 @@ import org.slf4j.LoggerFactory;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
+
+/**
+ * Endpoint for receiving KeypleDTO from clients
+ */
 public class EndpointKeypleDTO implements HttpHandler, TransportNode {
 
 
@@ -25,9 +33,12 @@ public class EndpointKeypleDTO implements HttpHandler, TransportNode {
 
     DtoDispatcher dtoDispatcher;
     DtoSender dtoSender;
+    String nodeId;
 
-    public EndpointKeypleDTO(DtoSender dtoSender) {
+    public EndpointKeypleDTO(DtoSender dtoSender, String nodeId) {
+
         this.dtoSender = dtoSender;// endpointPolling
+        this.nodeId = nodeId;
     }
 
     @Override
@@ -38,7 +49,7 @@ public class EndpointKeypleDTO implements HttpHandler, TransportNode {
         String requestMethod = t.getRequestMethod();
 
         if (requestMethod.equals("POST")) {
-            String body = HttpHelper.parseBodyToString(t.getRequestBody());// .. parse the
+            String body = parseBodyToString(t.getRequestBody());// .. parse the
             // request body
             KeypleDto incoming = KeypleDtoHelper.fromJson(body);
             TransportDto transportDto = new WsPTransportDTO(incoming, dtoSender);
@@ -71,6 +82,11 @@ public class EndpointKeypleDTO implements HttpHandler, TransportNode {
         logger.warn("Send DTO can not be used in Web Service DemoMaster");
     }
 
+    @Override
+    public String getNodeId() {
+        return this.nodeId;
+    }
+
 
     private void setHttpResponse(HttpExchange t, KeypleDto resp) throws IOException {
         if (!resp.getAction().isEmpty()) {
@@ -92,6 +108,12 @@ public class EndpointKeypleDTO implements HttpHandler, TransportNode {
             os.write(responseBody.getBytes());
             os.close();
         }
+    }
+
+    private String parseBodyToString(InputStream is) {
+        Scanner s = new Scanner(is).useDelimiter("\\A");
+        String result = s.hasNext() ? s.next() : "";
+        return result;
     }
 
     @Override

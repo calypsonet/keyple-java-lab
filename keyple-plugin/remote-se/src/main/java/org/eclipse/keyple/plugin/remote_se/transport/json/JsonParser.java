@@ -9,13 +9,13 @@
 package org.eclipse.keyple.plugin.remote_se.transport.json;
 
 
-
-import java.nio.ByteBuffer;
-import org.eclipse.keyple.seproxy.SeProtocol;
-import org.eclipse.keyple.seproxy.SeRequest;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
+import org.eclipse.keyple.seproxy.SeProtocol;
+import org.eclipse.keyple.seproxy.SeRequest;
+
+import java.nio.ByteBuffer;
 
 /**
  * Json Parser for Keyple DTO and Keyple DTO fields

@@ -9,6 +9,8 @@
 package org.eclipse.keyple.example.remote.wspolling;
 
 import java.io.IOException;
+
+import org.eclipse.keyple.example.remote.wspolling.server.WsPServer;
 import org.eclipse.keyple.plugin.remote_se.transport.KeypleDtoHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +34,7 @@ public class Server {
         logger.info("Start Polling Webservice server      ");
         logger.info("*************************************");
 
-        WsPServer server = new WsPServer(URL, PORT, END_POINT, POLLING_END_POINT);
+        WsPServer server = new WsPServer(URL, PORT, END_POINT, POLLING_END_POINT,"server");
         server.start();
 
 

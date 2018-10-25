@@ -10,18 +10,26 @@ package org.eclipse.keyple.example.remote;
 
 import org.eclipse.keyple.example.remote.common.TransportFactory;
 import org.eclipse.keyple.example.remote.wspolling.WsPollingFactory;
+import org.eclipse.keyple.example.remote.wspolling.client_retrofit.WsPollingRetrofitFactory;
 
 public class DemoWsPMasterServer {
 
+    //polling is lost
 
     public static void main(String[] args) throws Exception {
 
+        Boolean isRetrofit= false;
         Boolean isTransmitSync = true; // is Transmit API Blocking or Not Blocking
-
-        TransportFactory factory = new WsPollingFactory(); // HTTP Web Polling
-
         Boolean isMasterServer = true; // DemoMaster is the server (and DemoSlave the Client)
 
+
+        TransportFactory factory;
+
+        if(isRetrofit){
+            factory = new WsPollingRetrofitFactory(); // HTTP Web Polling
+        }else{
+            factory = new WsPollingFactory(); // HTTP Web Polling
+        }
         /**
          * DemoThreads
          */

@@ -8,7 +8,6 @@
 
 package org.eclipse.keyple.plugin.remote_se.rse;
 
-import java.util.concurrent.CountDownLatch;
 import org.eclipse.keyple.plugin.remote_se.transport.KeypleDto;
 import org.eclipse.keyple.plugin.remote_se.transport.KeypleDtoHelper;
 import org.eclipse.keyple.plugin.remote_se.transport.json.JsonParser;
@@ -18,25 +17,25 @@ import org.eclipse.keyple.util.Observable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.CountDownLatch;
+
 /**
- * Manage RSE Reader Session Manage SeRequestSet to transmit and receive SeResponseSet in an
+ * Manage RSE Reader Session Manage SeRequestSet to transmit and receive SeResponseSet in synchronous and
  * asynchronous way
  */
-public class ReaderAsyncSessionImpl extends Observable<KeypleDto> implements IReaderAsyncSession {
+public class ReaderSessionImpl extends Observable<KeypleDto> implements IReaderSession {
 
-    private static final Logger logger = LoggerFactory.getLogger(ReaderAsyncSessionImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(ReaderSessionImpl.class);
 
     private final String sessionId;
     private SeRequestSet seRequestSet;
     private ISeResponseSetCallback seResponseSetCallback;
-    // DtoSender dtoSender;
     private CountDownLatch lock;
     private SeResponseSet seResponseSet;
 
     // constructor
-    public ReaderAsyncSessionImpl(String sessionId) {
+    public ReaderSessionImpl(String sessionId) {
         this.sessionId = sessionId;
-        // this.dtoSender = dtoSender; not in used
     }
 
     /**
@@ -45,7 +44,7 @@ public class ReaderAsyncSessionImpl extends Observable<KeypleDto> implements IRe
      * @param seRequestSet : seRequestSet to be processed
      * @param seResponseSetCallback : callback that will be called once seResponseSet is received
      */
-    public void asyncTransmit(SeRequestSet seRequestSet,
+    public void asyncTransmit(String nativeReaderName, String virtualReaderName, SeRequestSet seRequestSet,
             ISeResponseSetCallback seResponseSetCallback) {
 
         logger.debug("Session {} asyncTransmit {}", sessionId, seRequestSet);
@@ -59,7 +58,7 @@ public class ReaderAsyncSessionImpl extends Observable<KeypleDto> implements IRe
             // used for 2way communications
             notifyObservers(new KeypleDto(KeypleDtoHelper.READER_TRANSMIT,
                     JsonParser.getGson().toJson(this.seRequestSet, SeRequestSet.class), true,
-                    sessionId));
+                    sessionId, nativeReaderName, virtualReaderName, null));
 
         } else {
             logger.warn("SeRequestSet is already set in Session {}", sessionId);
@@ -96,13 +95,13 @@ public class ReaderAsyncSessionImpl extends Observable<KeypleDto> implements IRe
 
 
     @Override
-    public SeResponseSet transmit(final SeRequestSet seApplicationRequest) {
+    public SeResponseSet transmit(final String nativeReaderName, final String virtualReaderName, final SeRequestSet seApplicationRequest) {
         logger.debug("Session {} sync transmit {}", sessionId, seApplicationRequest);
 
 
         Thread asyncTransmit = new Thread() {
             public void run() {
-                asyncTransmit(seApplicationRequest, new ISeResponseSetCallback() {
+                asyncTransmit(nativeReaderName, virtualReaderName, seApplicationRequest, new ISeResponseSetCallback() {
                     @Override
                     public void getResponseSet(SeResponseSet seResponseSet) {
                         logger.debug("Receive SeResponseSetCallback, release lock ");
@@ -138,11 +137,6 @@ public class ReaderAsyncSessionImpl extends Observable<KeypleDto> implements IRe
     @Override
     public String getSessionId() {
         return sessionId;
-    }
-
-    @Override
-    public Boolean isAsync() {
-        return true;
     }
 
 

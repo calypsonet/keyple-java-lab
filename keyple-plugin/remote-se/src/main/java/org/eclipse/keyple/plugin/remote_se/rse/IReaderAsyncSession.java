@@ -11,12 +11,13 @@ package org.eclipse.keyple.plugin.remote_se.rse;
 import org.eclipse.keyple.seproxy.SeRequestSet;
 import org.eclipse.keyple.seproxy.SeResponseSet;
 
+@Deprecated
 public interface IReaderAsyncSession extends IReaderSession {
 
     /*
      * Async Sessions (web services)
      */
-    void asyncTransmit(SeRequestSet seApplicationRequest, ISeResponseSetCallback seResponseSet);
+    void asyncTransmit(String nativeReaderName, String virtualReaderName, SeRequestSet seApplicationRequest, ISeResponseSetCallback seResponseSet);
 
     void asyncSetSeResponseSet(SeResponseSet seResponseSet);
 
@@ -24,7 +25,7 @@ public interface IReaderAsyncSession extends IReaderSession {
 
     SeRequestSet getSeRequestSet();
 
-    SeResponseSet transmit(SeRequestSet seApplicationRequest);
+    SeResponseSet transmit(String nativeReaderName, String virtualReaderName, SeRequestSet seApplicationRequest);
 
 
 }

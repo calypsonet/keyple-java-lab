@@ -8,14 +8,8 @@
 
 package org.eclipse.keyple.plugin.remote_se.rse;
 
-import java.util.Map;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import org.eclipse.keyple.plugin.remote_se.transport.*;
-import org.eclipse.keyple.plugin.remote_se.transport.json.JsonParser;
 import org.eclipse.keyple.seproxy.ProxyReader;
 import org.eclipse.keyple.seproxy.ReaderPlugin;
-import org.eclipse.keyple.seproxy.SeResponseSet;
 import org.eclipse.keyple.seproxy.event.ObservablePlugin;
 import org.eclipse.keyple.seproxy.event.PluginEvent;
 import org.eclipse.keyple.seproxy.event.ReaderEvent;
@@ -23,20 +17,30 @@ import org.eclipse.keyple.seproxy.exception.KeypleReaderNotFoundException;
 import org.eclipse.keyple.util.Observable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 
+import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
+/**
+ * Remote SE Plugin
+ * Creates a virtual reader when a remote readers connect
+ * Manages the dispatch of events received from remote readers
+ */
 public class RsePlugin extends Observable implements ObservablePlugin {
 
     private static final Logger logger = LoggerFactory.getLogger(RsePlugin.class);
 
-    //private final RseSessionManager sessionManager;
+    //private final VirtualSeSessionManager sessionManager;
 
     // virtal readers
     private final SortedSet<RseReader> rseReaders = new TreeSet<RseReader>();
 
-    public RsePlugin() {
-        //sessionManager = new RseSessionManager();
+    /**
+     * Only {@link VirtualSeRemoteService} can instiancite a RsePlugin
+     */
+    RsePlugin() {
+        //sessionManager = new VirtualSeSessionManager();
         logger.info("RemoteSePlugin");
     }
 
@@ -76,41 +80,45 @@ public class RsePlugin extends Observable implements ObservablePlugin {
     public ProxyReader getReaderByRemoteName(String remoteName)
             throws KeypleReaderNotFoundException {
         for (RseReader RseReader : rseReaders) {
-            if (RseReader.getRemoteName().equals(remoteName)) {
+            if (RseReader.getNativeReaderName().equals(remoteName)) {
                 return RseReader;
             }
         }
-        throw new KeypleReaderNotFoundException(
-                "reader with Remote Name not found : " + remoteName);
+        throw new KeypleReaderNotFoundException(remoteName);
     }
 
     /**
      * Create a virtual reader
      * 
-     * @param name
+     * @param localReaderName
      * @param session
      * @return
      */
-    protected void connectRemoteReader(String name, IReaderSession session) {
-        logger.debug("connectRemoteReader {}", name);
+    protected String createVirtualReader(String localReaderName, IReaderSession session) {
+        logger.debug("createVirtualReader {}", localReaderName);
 
-        // check if reader is not already connected (by name)
-        if (!isReaderConnected(name)) {
-            logger.info("Connecting a new RemoteSeReader with name {} with session {}", name,
+        // check if reader is not already connected (by localReaderName)
+        if (!isReaderConnected(localReaderName)) {
+            logger.info("Connecting a new RemoteSeReader with localReaderName {} with session {}", localReaderName,
                     session.getSessionId());
 
-            RseReader rseReader = new RseReader(session, name);
+            RseReader rseReader = new RseReader(session, localReaderName);
             rseReaders.add(rseReader);
             notifyObservers(new PluginEvent(getName(), rseReader.getName(),
                     PluginEvent.EventType.READER_CONNECTED));
             logger.info("*****************************");
             logger.info(" CONNECTED {} ", rseReader.getName());
             logger.info("*****************************");
-
+            return rseReader.getName();
         } else {
-            logger.warn("RemoteSeReader with name {} is already connected", name);
+            try {
+                logger.warn("RemoteSeReader with localReaderName {} is already connected", localReaderName);
+                return this.getReaderByRemoteName(localReaderName).toString();
+            } catch (KeypleReaderNotFoundException e) {
+                e.printStackTrace();
+                return null;
+            }
         }
-        // todo errors
     }
 
     /**
@@ -201,7 +209,7 @@ public class RsePlugin extends Observable implements ObservablePlugin {
 
     private Boolean isReaderConnected(String name) {
         for (RseReader RseReader : rseReaders) {
-            if (RseReader.getRemoteName().equals(name)) {
+            if (RseReader.getNativeReaderName().equals(name)) {
                 return true;
             }
         }
@@ -216,43 +224,4 @@ public class RsePlugin extends Observable implements ObservablePlugin {
 
 
 
-
-
-    protected TransportDto isSeRequestToSendBack(TransportDto tdto) {
-        TransportDto out = null;
-        try {
-            // retrieve reader by session
-            RseReader rseReader = this.getReaderBySessionId(tdto.getKeypleDTO().getSessionId());
-
-            if (rseReader.getSession().isAsync()
-                    && ((IReaderAsyncSession) rseReader.getSession()).hasSeRequestSet()) {
-
-                // send back seRequestSet
-                out = tdto.nextTransportDTO(new KeypleDto(KeypleDtoHelper.READER_TRANSMIT,
-                        JsonParser.getGson().toJson(
-                                ((IReaderAsyncSession) rseReader.getSession()).getSeRequestSet()),
-                        true, rseReader.getSession().getSessionId()));
-            } else {
-                // no response
-                out = tdto.nextTransportDTO(KeypleDtoHelper.NoResponse());
-            }
-
-        } catch (KeypleReaderNotFoundException e) {
-            logger.debug("Reader was not found by session", e);
-            out = tdto.nextTransportDTO(KeypleDtoHelper.ErrorDTO());
-        }
-
-        return out;
-    }
-
-
-    protected RseReader getReaderBySessionId(String sessionId) throws KeypleReaderNotFoundException {
-        for (RseReader reader : rseReaders) {
-            if (reader.getSession().getSessionId().equals(sessionId)) {
-                return reader;
-            }
-        }
-        throw new KeypleReaderNotFoundException(
-                "Reader sesssion was not found for session : " + sessionId);
-    }
 }

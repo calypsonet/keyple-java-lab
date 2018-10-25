@@ -20,11 +20,13 @@ import org.eclipse.keyple.example.remote.common.TransportFactory;
 import org.eclipse.keyple.plugin.remote_se.nse.NativeSeRemoteService;
 import org.eclipse.keyple.plugin.remote_se.transport.TransportNode;
 import org.eclipse.keyple.plugin.stub.StubPlugin;
+import org.eclipse.keyple.plugin.stub.StubProtocolSetting;
 import org.eclipse.keyple.plugin.stub.StubReader;
 import org.eclipse.keyple.seproxy.ReaderPlugin;
 import org.eclipse.keyple.seproxy.SeProxyService;
 import org.eclipse.keyple.seproxy.exception.KeypleReaderException;
 import org.eclipse.keyple.seproxy.exception.KeypleReaderNotFoundException;
+import org.eclipse.keyple.seproxy.protocol.SeProtocolSetting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,6 +85,10 @@ public class DemoSlave {
 
         // get the created proxy reader
         localReader = (StubReader) stubPlugin.getReader("stubClientSlave");
+
+        localReader.addSeProtocolSetting(
+                new SeProtocolSetting(StubProtocolSetting.SETTING_PROTOCOL_ISO14443_4));
+
 
         seRemoteService = new NativeSeRemoteService(node);// ougoing traffic
         seRemoteService.bindDtoEndpoint(node);// incoming traffic

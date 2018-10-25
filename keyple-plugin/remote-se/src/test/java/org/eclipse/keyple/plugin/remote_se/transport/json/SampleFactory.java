@@ -72,8 +72,8 @@ public class SampleFactory {
     public static SeResponseSet getCompeleteResponseSet() {
         List<SeResponse> seResponses = new ArrayList<SeResponse>();
 
-        ApduResponse apdu = new ApduResponse(ByteArrayUtils.fromHex("9000"), new HashSet<Short>());
-        ApduResponse apdu2 = new ApduResponse(ByteArrayUtils.fromHex("9000"), new HashSet<Short>());
+        ApduResponse apdu = new ApduResponse(ByteArrayUtils.fromHex("9000"), new HashSet<Integer>());
+        ApduResponse apdu2 = new ApduResponse(ByteArrayUtils.fromHex("9000"), new HashSet<Integer>());
 
         List<ApduResponse> apduResponses = new ArrayList<ApduResponse>();
         apduResponses.add(apdu);
