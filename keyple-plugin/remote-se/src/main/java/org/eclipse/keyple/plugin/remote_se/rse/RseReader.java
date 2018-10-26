@@ -10,6 +10,7 @@ package org.eclipse.keyple.plugin.remote_se.rse;
 
 import org.eclipse.keyple.seproxy.*;
 import org.eclipse.keyple.seproxy.event.ObservableReader;
+import org.eclipse.keyple.seproxy.event.PluginEvent;
 import org.eclipse.keyple.seproxy.event.ReaderEvent;
 import org.eclipse.keyple.seproxy.protocol.SeProtocolSetting;
 import org.eclipse.keyple.util.Observable;
@@ -113,11 +114,18 @@ public class RseReader extends Observable implements ObservableReader {
      * 
      * @param event
      */
-    void onRemoteReaderEvent(ReaderEvent event) {
+    void onRemoteReaderEvent(final ReaderEvent event) {
+        final RseReader thisReader = this;
         logger.info("*****************************");
         logger.info(" EVENT {} ", event.getEventType());
         logger.info("*****************************");
-        this.notifyObservers(event);
+        //notify observers in a separate thread
+        new Thread() {
+            public void run() {
+                thisReader.notifyObservers(event);
+            }
+        }.start();
+
     }
 
 

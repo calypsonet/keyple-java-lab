@@ -108,10 +108,17 @@ public class RsePlugin extends Observable implements ObservablePlugin {
             logger.info("Connecting a new RemoteSeReader with localReaderName {} with session {}", nativeReaderName,
                     session.getSessionId());
 
-            RseReader rseReader = new RseReader(session, nativeReaderName);
+            final RseReader rseReader = new RseReader(session, nativeReaderName);
             rseReaders.add(rseReader);
-            notifyObservers(new PluginEvent(getName(), rseReader.getName(),
-                    PluginEvent.EventType.READER_CONNECTED));
+
+            //notify that a new reader is connected in a separated thread
+            new Thread() {
+                public void run() {
+                    notifyObservers(new PluginEvent(getName(), rseReader.getName(),
+                            PluginEvent.EventType.READER_CONNECTED));
+                }
+            }.start();
+
             logger.info("*****************************");
             logger.info(" CONNECTED {} ", rseReader.getName());
             logger.info("*****************************");
@@ -135,7 +142,7 @@ public class RsePlugin extends Observable implements ObservablePlugin {
             logger.info("DisconnectRemoteReader RemoteSeReader with name {} with session {}", nativeReaderName);
 
             //retrieve virtual reader to delete
-            RseReader virtualReader = (RseReader) this.getReaderByRemoteName(nativeReaderName);
+            final RseReader virtualReader = (RseReader) this.getReaderByRemoteName(nativeReaderName);
 
             //remove observers
             ((ReaderSessionImpl) virtualReader.getSession()).clearObservers();
@@ -143,9 +150,13 @@ public class RsePlugin extends Observable implements ObservablePlugin {
             //remove reader
             rseReaders.remove(virtualReader);
 
-            //notify of disconnect
-            notifyObservers(new PluginEvent(getName(), nativeReaderName,
-                    PluginEvent.EventType.READER_DISCONNECTED));
+            new Thread() {
+                public void run() {
+                    notifyObservers(new PluginEvent(getName(), virtualReader.getName(),
+                            PluginEvent.EventType.READER_DISCONNECTED));
+                }
+            }.start();
+
 
             logger.info("*****************************");
             logger.info(" DISCONNECTED {} ", nativeReaderName);
@@ -157,6 +168,11 @@ public class RsePlugin extends Observable implements ObservablePlugin {
         // todo errors
     }
 
+    /**
+     *
+     * @param event
+     * @param sessionId
+     */
     protected void onReaderEvent(ReaderEvent event, String sessionId) {
         logger.debug("OnReaderEvent {}", event);
         logger.debug("Dispatch ReaderEvent to the appropriate Reader {} {}", event.getReaderName(),

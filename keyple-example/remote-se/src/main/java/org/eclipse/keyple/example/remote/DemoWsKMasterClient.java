@@ -13,15 +13,15 @@ import org.eclipse.keyple.example.remote.websocket.WskFactory;
 
 public class DemoWsKMasterClient {
 
-  //works
+    //blocking : works
+    //non blocking : todo
 
     public static void main(String[] args) throws Exception {
 
-        Boolean isTransmitSync = true; // is Transmit API Blocking or Not Blocking
-
         TransportFactory factory = new WskFactory(); // Web socket
-
         Boolean isMasterServer = false; // DemoMaster is the Client (and DemoSlave the server)
+
+        Boolean isTransmitSync = true; // is Transmit API Blocking or Not Blocking
 
         /**
          * DemoThreads

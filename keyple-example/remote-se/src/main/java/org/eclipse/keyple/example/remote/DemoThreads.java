@@ -36,9 +36,9 @@ public class DemoThreads {
 
                     } else {
                         DemoSlave slave = new DemoSlave(factory, true);
-                        logger.info("Wait for 5 seconds, then connect to master");
+                        logger.info("Wait for 5 seconds, then connectAReader to master");
                         Thread.sleep(5000);
-                        slave.connect();
+                        slave.connectAReader();
                         logger.info("Wait for 5 seconds, then insert SE");
                         Thread.sleep(5000);
                         slave.insertSe();
@@ -79,7 +79,7 @@ public class DemoThreads {
                         master.boot();
                     } else {
                         DemoSlave slave = new DemoSlave(factory, false);
-                        slave.connect();
+                        slave.connectAReader();
                         logger.info("Wait for 5 seconds, then insert SE");
                         Thread.sleep(5000);
                         slave.insertSe();

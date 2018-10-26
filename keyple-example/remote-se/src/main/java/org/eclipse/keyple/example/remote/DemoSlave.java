@@ -34,10 +34,16 @@ public class DemoSlave {
 
     private static final Logger logger = LoggerFactory.getLogger(DemoSlave.class);
 
-    // physical reader
+    //physical reader, use a stubreader in our case
     StubReader localReader;
+
+    //TransportNode used as to send and receive KeypleDto to Master
     private TransportNode node;
+
+    //NativeSeRemoteService, used to connectAReader and disconnect readers
     private NativeSeRemoteService seRemoteService;
+
+    //Client NodeId used to identify this terminal
     private String nodeId = "node1";
 
     public DemoSlave(TransportFactory transportFactory, Boolean isServer) {
@@ -46,6 +52,7 @@ public class DemoSlave {
         logger.info("*******************");
 
         if (isServer) {
+            //Slave is server, start Server and wait for Master clients
             try {
                 node = transportFactory.getServer(false);
                 // start server in a new thread
@@ -61,12 +68,13 @@ public class DemoSlave {
                 e.printStackTrace();
             }
         } else {
+            //Slave is client, connectAReader to Master Server
             node = transportFactory.getClient(false);
             ((ClientNode) node).connect();
         }
     }
 
-    public void connect() throws KeypleReaderException, InterruptedException, IOException {
+    public void connectAReader() throws KeypleReaderException, InterruptedException, IOException {
 
 
         logger.info("Boot DemoSlave LocalReader ");
@@ -90,14 +98,19 @@ public class DemoSlave {
                 new SeProtocolSetting(StubProtocolSetting.SETTING_PROTOCOL_ISO14443_4));
 
 
-        seRemoteService = new NativeSeRemoteService(node);// ougoing traffic
-        seRemoteService.bindDtoEndpoint(node);// incoming traffic
+        //Binds node for outgoing KeypelDto
+        seRemoteService = new NativeSeRemoteService(node);
 
+        //Binds node for incoming KeypleDTo
+        seRemoteService.bindDtoEndpoint(node);
+
+        //no options used so far
         Map<String, Object> options = new HashMap<String, Object>();
-        options.put("isAsync", true);
+
+        //connect a reader to Remote Plugin
+        logger.info("Connect remotely the StubPlugin ");
         seRemoteService.connectReader(nodeId, localReader, options);
 
-        logger.info("Connect remotely the StubPlugin ");
     }
 
     public void insertSe() {

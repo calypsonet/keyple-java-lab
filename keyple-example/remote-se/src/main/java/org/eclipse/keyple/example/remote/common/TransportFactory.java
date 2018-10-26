@@ -11,7 +11,7 @@ package org.eclipse.keyple.example.remote.common;
 import java.io.IOException;
 
 /**
- * Factory for Clients and Servers sharing a protocol and a configuration to connect each others
+ * Factory for Clients and Servers sharing a protocol and a configuration to connectAReader each others
  */
 public abstract class TransportFactory {
 

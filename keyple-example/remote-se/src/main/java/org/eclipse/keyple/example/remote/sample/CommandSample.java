@@ -43,8 +43,6 @@ public class CommandSample {
             ReadRecordsCmdBuild poReadRecordCmd_T2Env = new ReadRecordsCmdBuild(PoRevision.REV3_1,
                     (byte) 0x14, (byte) 0x01, true, (byte) 0x20, "Hoplink EF T2Environment");
 
-
-
             List<ApduRequest> poApduRequestList;
             poApduRequestList = Arrays.asList(poReadRecordCmd_T2Env.getApduRequest());
             final SeRequest.Selector selector =
@@ -99,7 +97,6 @@ public class CommandSample {
             // build 1st seRequestSet with keep channel open to true
             ReadRecordsCmdBuild poReadRecordCmd_T2Env = new ReadRecordsCmdBuild(PoRevision.REV3_1,
                     (byte) 0x14, (byte) 0x01, true, (byte) 0x20, "Hoplink EF T2Environment");
-
 
 
             List<ApduRequest> poApduRequestList;

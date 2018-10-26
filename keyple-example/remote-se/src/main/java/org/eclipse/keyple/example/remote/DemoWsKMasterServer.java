@@ -13,7 +13,8 @@ import org.eclipse.keyple.example.remote.websocket.WskFactory;
 
 public class DemoWsKMasterServer {
 
-    //works
+    //blocking : works
+    //non blocking : todo
 
     public static void main(String[] args) throws Exception {
 

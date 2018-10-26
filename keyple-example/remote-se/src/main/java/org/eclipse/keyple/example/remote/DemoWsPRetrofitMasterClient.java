@@ -14,7 +14,8 @@ import org.eclipse.keyple.example.remote.wspolling.client_retrofit.WsPollingRetr
 
 public class DemoWsPRetrofitMasterClient {
 
-    //works
+    //blocking : works
+    //non blocking : todo
 
     public static void main(String[] args) throws Exception {
 
@@ -22,11 +23,7 @@ public class DemoWsPRetrofitMasterClient {
         Boolean isMasterServer = false; // DemoMaster is the Client (and DemoSlave the server)
 
 
-        TransportFactory factory;
-
-            factory = new WsPollingRetrofitFactory(); // HTTP Web Polling with Android compatible client_retrofit Library
-
-
+        TransportFactory factory = new WsPollingRetrofitFactory(); // HTTP Web Polling with Android compatible client_retrofit Library
 
         /**
          * DemoThreads

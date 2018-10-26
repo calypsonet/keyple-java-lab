@@ -31,26 +31,31 @@ public class DemoMaster implements org.eclipse.keyple.util.Observable.Observer {
 
     private static final Logger logger = LoggerFactory.getLogger(DemoMaster.class);
 
+    //TransportNode used as to send and receive KeypleDto to Slaves
     private TransportNode node;
+
+    //For demo testing, use blocking or non blocking transmit API
     private Boolean transmitSync;
 
 
     /**
-     * Constructor of the DemoMaster thread, will kickoff server or client
+     * Constructor of the DemoMaster thread
+     * Starts a transport node, can be server or client
      * 
-     * @param transportFactory
-     * @param isServer
-     * @param transmitSync
+     * @param transportFactory : type of transport used (websocket, webservice...)
+     * @param isServer : is Master the server?
+     * @param transmitSync : should we used blocking or non blocking transmit API
      */
     public DemoMaster(TransportFactory transportFactory, Boolean isServer, Boolean transmitSync) {
 
         this.transmitSync = transmitSync;
 
         logger.info("*******************");
-        logger.info("Create DemoMaster    ");
+        logger.info("Create DemoMaster  ");
         logger.info("*******************");
 
         if (isServer) {
+            //Master is server, start Server and wait for Slave Clients
             try {
                 node = transportFactory.getServer(true);
                 // start server in a new thread
@@ -66,6 +71,7 @@ public class DemoMaster implements org.eclipse.keyple.util.Observable.Observer {
                 e.printStackTrace();
             }
         } else {
+            //Master is client, connectAReader to Slave Server
             node = transportFactory.getClient(true);
             ((ClientNode) node).connect();
         }
@@ -74,26 +80,25 @@ public class DemoMaster implements org.eclipse.keyple.util.Observable.Observer {
     public void boot() throws IOException {
 
 
-        logger.info("Create VirtualSeRemoteService start plugin");
-        VirtualSeRemoteService vse = new VirtualSeRemoteService(SeProxyService.getInstance(), node);
-        ReaderPlugin rsePlugin = vse.getPlugin();
+        logger.info("Create VirtualSeRemoteService, start plugin");
+        //Create virtualSeRemoteService with a DtoSender
+        //Dto Sender is required so virtualSeRemoteService can send KeypleDTO to Slave
+        //In this case, node is used as the dtosender (can be client or server)
+        VirtualSeRemoteService virtualSeRemoteService = new VirtualSeRemoteService(SeProxyService.getInstance(), node);
 
+        //observe remote se plugin for events
         logger.info("Observe SeRemotePLugin for Plugin Events and Reader Events");
+        ReaderPlugin rsePlugin = virtualSeRemoteService.getPlugin();
         ((Observable) rsePlugin).addObserver(this);
 
-        vse.bindDtoEndpoint(node);
+        //Binds virtualSeRemoteService to a TransportNode so virtualSeRemoteService receives incoming KeypleDto from Slaves
+        //in this case we binds it to node (can be client or server)
+        virtualSeRemoteService.bindDtoEndpoint(node);
 
 
     }
 
 
-
-    /*
-     * public void status() throws UnexpectedPluginException, IOReaderException { // should show
-     * remote readers after a while SeProxyService service = SeProxyService.getInstance();
-     * logger.info("Remote readers connected {}",
-     * service.getPlugin("RemoteSePlugin").getReaders().size()); }
-     */
 
     /**
      * Receives Event from RSE Plugin
@@ -102,80 +107,69 @@ public class DemoMaster implements org.eclipse.keyple.util.Observable.Observer {
      */
     @Override
     public void update(final Object o) {
-
         logger.debug("UPDATE {}", o);
-        logger.debug("CREATING A NEW THREAD TO PROCESS THE EVENT");
+        final DemoMaster masterThread = this;
 
-        final DemoMaster master = this;
+        // Receive a PluginEvent
+        if (o instanceof PluginEvent) {
+            PluginEvent event = (PluginEvent) o;
+            switch (event.getEventType()) {
+                case READER_CONNECTED:
+                    //a new virtual reader is connected, let's observe it readers event
+                    logger.info("READER_CONNECTED {} {}", event.getPluginName(),
+                            event.getReaderName());
+                    try {
+                        RsePlugin rsePlugin = (RsePlugin) SeProxyService.getInstance()
+                                .getPlugin("RemoteSePlugin");
+                        RseReader rseReader =
+                                (RseReader) rsePlugin.getReader(event.getReaderName());
 
-        new Thread() {
+                        //observe reader events
+                        logger.info("Add ServerTicketingApp as a Observer of RSE reader");
+                        rseReader.addObserver(masterThread);
 
-            public void run() {
-                // PluginEvent
-                if (o instanceof PluginEvent) {
-                    PluginEvent event = (PluginEvent) o;
-                    switch (event.getEventType()) {
-                        case READER_CONNECTED:
-                            logger.info("READER_CONNECTED {} {}", event.getPluginName(),
-                                    event.getReaderName());
-                            try {
-                                RsePlugin rsePlugin = (RsePlugin) SeProxyService.getInstance()
-                                        .getPlugin("RemoteSePlugin");
-                                RseReader rseReader =
-                                        (RseReader) rsePlugin.getReader(event.getReaderName());
-
-                                logger.info("Add ServerTicketingApp as a Observer of RSE reader");
-                                rseReader.addObserver(master);
-
-                            } catch (KeypleReaderNotFoundException e) {
-                                logger.error(e.getMessage());
-                                e.printStackTrace();
-                            } catch (KeyplePluginNotFoundException e) {
-                                logger.error(e.getMessage());
-                                e.printStackTrace();
-                            }
-
-
-                            break;
-                        case READER_DISCONNECTED:
-                            logger.info("READER_DISCONNECTED {} {}", event.getPluginName(),
-                                    event.getReaderName());
-                            break;
+                    } catch (KeypleReaderNotFoundException e) {
+                        logger.error(e.getMessage());
+                        e.printStackTrace();
+                    } catch (KeyplePluginNotFoundException e) {
+                        logger.error(e.getMessage());
+                        e.printStackTrace();
                     }
-                }
-                // ReaderEvent
-                else if (o instanceof ReaderEvent) {
-                    ReaderEvent event = (ReaderEvent) o;
-                    switch (event.getEventType()) {
-                        case SE_INSERTED:
-                            logger.info("SE_INSERTED {} {}", event.getPluginName(),
-                                    event.getReaderName());
-                            // CommandSample.asyncTransmit(logger, event.getReaderName());
-                            // CommandSample.transmitSyncCommand(logger, event.getReaderName());
-                            if (transmitSync) {
-                                CommandSample.transmit(logger, event.getReaderName());
-                            } else {
-                                CommandSample.asyncTransmit(logger, event.getReaderName());
-                            }
-                            break;
-                        case SE_REMOVAL:
-                            logger.info("SE_REMOVAL {} {}", event.getPluginName(),
-                                    event.getReaderName());
-                            break;
-                        case IO_ERROR:
-                            logger.info("IO_ERROR {} {}", event.getPluginName(),
-                                    event.getReaderName());
-                            break;
 
-                    }
-                }
 
+                    break;
+                case READER_DISCONNECTED:
+                    logger.info("READER_DISCONNECTED {} {}", event.getPluginName(),
+                            event.getReaderName());
+                    break;
             }
+        }
+        // ReaderEvent
+        else if (o instanceof ReaderEvent) {
+            ReaderEvent event = (ReaderEvent) o;
+            switch (event.getEventType()) {
+                case SE_INSERTED:
+                    logger.info("SE_INSERTED {} {}", event.getPluginName(),
+                            event.getReaderName());
 
-
-        }.start();
-
-
+                    if (transmitSync) {
+                        //test command with blocking transmit
+                        CommandSample.transmit(logger, event.getReaderName());
+                    } else {
+                        //test command with non-blocking transmit
+                        CommandSample.asyncTransmit(logger, event.getReaderName());
+                    }
+                    break;
+                case SE_REMOVAL:
+                    logger.info("SE_REMOVAL {} {}", event.getPluginName(),
+                            event.getReaderName());
+                    break;
+                case IO_ERROR:
+                    logger.info("IO_ERROR {} {}", event.getPluginName(),
+                            event.getReaderName());
+                    break;
+            }
+        }
     }
 
 }

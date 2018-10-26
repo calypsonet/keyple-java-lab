@@ -14,7 +14,8 @@ import org.eclipse.keyple.example.remote.wspolling.client_retrofit.WsPollingRetr
 
 public class DemoWsPMasterClient {
 
-    //works
+    //blocking : works
+    //non blocking : todo
 
     public static void main(String[] args) throws Exception {
 
