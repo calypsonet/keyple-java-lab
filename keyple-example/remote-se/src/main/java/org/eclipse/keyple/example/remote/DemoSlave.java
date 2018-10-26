@@ -30,6 +30,9 @@ import org.eclipse.keyple.seproxy.protocol.SeProtocolSetting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * DemoSlave is where slave readers are physically located
+ */
 public class DemoSlave {
 
     private static final Logger logger = LoggerFactory.getLogger(DemoSlave.class);

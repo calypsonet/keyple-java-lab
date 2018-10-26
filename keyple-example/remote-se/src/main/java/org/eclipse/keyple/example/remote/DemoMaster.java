@@ -27,6 +27,10 @@ import org.eclipse.keyple.util.Observable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * DemoMaster is the Ticketing Terminal
+ * This is where virtual readers {@link RseReader} are created into the Remote Se Plugin {@link RsePlugin}
+ */
 public class DemoMaster implements org.eclipse.keyple.util.Observable.Observer {
 
     private static final Logger logger = LoggerFactory.getLogger(DemoMaster.class);
