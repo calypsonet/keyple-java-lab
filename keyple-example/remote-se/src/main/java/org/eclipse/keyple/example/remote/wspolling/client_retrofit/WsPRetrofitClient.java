@@ -26,7 +26,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Rest client, polls server, based on retrofit and callbacks
+ * Rest client, polls server, based on client_retrofit and callbacks
  */
 public class WsPRetrofitClient implements ClientNode {
 
@@ -35,6 +35,7 @@ public class WsPRetrofitClient implements ClientNode {
 
     private String baseUrl;
     private String nodeId;
+    private Boolean poll;
 
     private DtoDispatcher dtoDispatcher;
 
@@ -45,35 +46,45 @@ public class WsPRetrofitClient implements ClientNode {
 
 
     /**
-     * recursive polling method based on retrofit callbacks
+     * recursive polling method based on client_retrofit callbacks
      * @param nodeId
      */
-    public void startPollingWorker(final String nodeId) {
+    private void startPollingWorker(final String nodeId) {
 
         logger.trace("Polling clientNodeId {}", nodeId);
+        this.poll = true;
+        poll(nodeId);
+    }
 
-        Call<KeypleDto> call = getRseAPIClient(baseUrl).getPolling(nodeId);
+    private void poll(final String nodeId){
+        //if poll is activated
+        if(this.poll){
+            Call<KeypleDto> call = getRseAPIClient(baseUrl).getPolling(nodeId);
+            call.enqueue(new Callback<KeypleDto>() {
+                @Override
+                public void onResponse(Call<KeypleDto> call, Response<KeypleDto> response) {
+                    int statusCode = response.code();
+                    logger.trace("Polling for clientNodeId {} receive a httpResponse http code {}", nodeId,
+                            statusCode);
+                    processHttpResponseDTO(response);
+                    poll(nodeId);//recursive call to restart polling
+                }
 
-        call.enqueue(new Callback<KeypleDto>() {
-            @Override
-            public void onResponse(Call<KeypleDto> call, Response<KeypleDto> response) {
-                int statusCode = response.code();
-                logger.trace("Polling for clientNodeId {} receive a httpResponse http code {}", nodeId,
-                        statusCode);
-                processHttpResponseDTO(response);
-                startPollingWorker(nodeId);//recursive call to restart polling
-            }
-
-            @Override
-            public void onFailure(Call<KeypleDto> call, Throwable t) {
-                // Log error here since request failed
-                logger.debug("polling ends, start it over, error : " + t.getMessage());
-                startPollingWorker(nodeId);//recursive call to restart polling
-            }
-        });
+                @Override
+                public void onFailure(Call<KeypleDto> call, Throwable t) {
+                    // Log error here since request failed
+                    logger.debug("polling ends, start it over, error : " + t.getMessage());
+                    poll(nodeId);//recursive call to restart polling
+                }
+            });
+        }else{
+            //poll is not active, call startPollingWorker to activate again
+        }
+    }
 
 
-
+    private void stopPollingWorker(){
+        this.poll = false;
     }
 
 
@@ -157,10 +168,16 @@ public class WsPRetrofitClient implements ClientNode {
         this.startPollingWorker(nodeId);
     }
 
+    @Override
+    public void disconnect() {
+        this.stopPollingWorker();
+    }
 
 
 
-    private org.eclipse.keyple.example.remote.wspolling.client_retrofit.RseAPI getRseAPIClient(String baseUrl){
+
+
+    static RseAPI getRseAPIClient(String baseUrl){
 
         final OkHttpClient okHttpClient = new OkHttpClient.Builder()
                 .connectTimeout(20, TimeUnit.SECONDS)

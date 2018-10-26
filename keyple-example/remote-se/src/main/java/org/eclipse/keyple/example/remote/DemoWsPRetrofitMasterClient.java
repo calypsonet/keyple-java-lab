@@ -24,7 +24,7 @@ public class DemoWsPRetrofitMasterClient {
 
         TransportFactory factory;
 
-            factory = new WsPollingRetrofitFactory(); // HTTP Web Polling with Android compatible retrofit Library
+            factory = new WsPollingRetrofitFactory(); // HTTP Web Polling with Android compatible client_retrofit Library
 
 
 

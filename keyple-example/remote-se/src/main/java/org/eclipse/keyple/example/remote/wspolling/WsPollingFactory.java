@@ -9,6 +9,8 @@
 package org.eclipse.keyple.example.remote.wspolling;
 
 import java.io.IOException;
+import java.util.Random;
+
 import org.eclipse.keyple.example.remote.common.ClientNode;
 import org.eclipse.keyple.example.remote.common.ServerNode;
 import org.eclipse.keyple.example.remote.common.TransportFactory;
@@ -23,7 +25,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("PMD.AvoidUsingHardCodedIP")
 public class WsPollingFactory extends TransportFactory {
 
-    Integer port = 8007;
+    Integer port = 8000 + new Random().nextInt((100 - 0) + 1) + 0;
     String pollingUrl = "/polling";
     String keypleUrl = "/keypleDTO";
     String clientNodeId = "local1";

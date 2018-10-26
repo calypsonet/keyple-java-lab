@@ -18,4 +18,6 @@ public interface ClientNode extends TransportNode {
 
     void connect();
 
+    void disconnect();
+
 }

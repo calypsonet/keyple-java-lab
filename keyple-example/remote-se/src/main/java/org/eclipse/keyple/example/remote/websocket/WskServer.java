@@ -35,6 +35,8 @@ public class WskServer extends WebSocketServer implements ServerNode {
 
     public WskServer(InetSocketAddress address, Boolean isSlave, String nodeId) {
         super(address);
+
+        logger.info("Create websocket server on address {}", address.toString() );
         this.isSlave = isSlave;
         this.nodeId = nodeId;
     }
@@ -75,13 +77,13 @@ public class WskServer extends WebSocketServer implements ServerNode {
                 if (transportDto.getKeypleDTO().getSessionId() != null) {
                     sessionId_Connection.put(transportDto.getKeypleDTO().getSessionId(), conn);
                 } else {
-                    logger.warn("No session defined in response {}", transportDto);
+                    logger.debug("No session defined in message {}", transportDto);
                 }
             }
 
             this.sendDTO(transportDto);
         } else {
-            logger.warn("Received a message but no DtoDispatcher");
+            new IllegalStateException("Received a message but no DtoDispatcher is defined to process the message");
         }
     }
 

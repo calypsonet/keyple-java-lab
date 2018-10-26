@@ -1,8 +1,7 @@
-package org.eclipse.keyple.example.remote.wspolling.retrofit;
+package org.eclipse.keyple.example.remote.wspolling.client_retrofit;
 
 import junit.framework.Assert;
 
-import org.eclipse.keyple.example.remote.wspolling.HttpHelper;
 import org.eclipse.keyple.plugin.remote_se.transport.KeypleDto;
 import org.eclipse.keyple.plugin.remote_se.transport.KeypleDtoHelper;
 import org.junit.Before;
@@ -18,7 +17,7 @@ import retrofit2.Response;
 public class RseAPIClientTest {
 
 
-    final String BASE_URL = "http://192.168.0.12:8081/";
+    final String BASE_URL = "http://localhost:8081/";
 
 
     @Before
@@ -35,7 +34,7 @@ public class RseAPIClientTest {
      */
     @Test(expected = IOException.class)
     public void testPolling() throws IOException {
-        org.eclipse.keyple.example.remote.wspolling.retrofit.RseAPI rseClient = HttpHelper.getRseAPIClient(BASE_URL);
+        RseAPI rseClient = WsPRetrofitClient.getRseAPIClient(BASE_URL);
         Response<KeypleDto> kdto =  rseClient.getPolling("clientNodeId").execute();
 
     }
@@ -49,7 +48,7 @@ public class RseAPIClientTest {
 
         KeypleDto dtoConnect = new KeypleDto(KeypleDtoHelper.READER_CONNECT, "{nativeReaderName:test,isAsync:true, clientNodeId:testnode1}", true);
 
-        org.eclipse.keyple.example.remote.wspolling.retrofit.RseAPI rseClient = HttpHelper.getRseAPIClient(BASE_URL);
+        RseAPI rseClient = WsPRetrofitClient.getRseAPIClient(BASE_URL);
         Response<KeypleDto> resp = rseClient.postDto(dtoConnect).execute();
 
         Assert.assertEquals(200, resp.code());

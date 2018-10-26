@@ -13,6 +13,9 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Queue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
+
 import org.eclipse.keyple.plugin.remote_se.transport.*;
 import org.eclipse.keyple.plugin.remote_se.transport.TransportDto;
 import org.eclipse.keyple.plugin.remote_se.transport.TransportNode;
@@ -31,9 +34,9 @@ public class EndpointPolling implements HttpHandler, TransportNode {
 
     DtoDispatcher dtoDispatcher;
     String nodeId;
-    private Queue<HttpExchange> requestQueue;
+    private BlockingQueue<HttpExchange> requestQueue;
 
-    public EndpointPolling(Queue requestQueue, String nodeId) {
+    public EndpointPolling( BlockingQueue requestQueue, String nodeId) {
         this.nodeId = nodeId;
         this.requestQueue = requestQueue;
     }
@@ -57,12 +60,12 @@ public class EndpointPolling implements HttpHandler, TransportNode {
             String nodeId = params.get("clientNodeId");
             // logger.trace("param clientNodeId=" + params.get("clientNodeId"));
 
-            logger.debug(
-                    "Receive a polling request {} for clientNodeId {}, add it to the queue, queue size before adding {}",
-                    t.toString(), nodeId, requestQueue.size());
-
             // set httpExchange in queue
             requestQueue.add(t);
+
+            logger.debug(
+                    "Receive a polling request {} from clientNodeId {} queue size {}",
+                    t.toString(), nodeId, requestQueue.size());
 
         }
     }
@@ -84,27 +87,20 @@ public class EndpointPolling implements HttpHandler, TransportNode {
 
     @Override
     public void sendDTO(KeypleDto message) {
-        logger.debug("Using polling to send keypleDTO {}", KeypleDtoHelper.toJson(message));
+        logger.debug("Using polling to send keypleDTO whose action : {}", message.getAction());
 
-        synchronized (requestQueue) {
-            logger.debug("Polling Queue size {}", requestQueue.size());
-
-            if (requestQueue.size() == 0) {
-                logger.warn("Too bad request Queue is empty, impossible to send DTO");
-                throw new IllegalStateException("Request Queue is empty, impossible to send DTO");
-            } else {
-
-                HttpExchange t = requestQueue.poll();
-
-                try {
-                    logger.debug("Found a wainting HttpExchange {}", t.toString());
-                    setHttpResponse(t, message);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    logger.error("Response to polling has failed");
-                }
-            }
+            HttpExchange t = null;
+            try {
+                t = requestQueue.poll(2, TimeUnit.SECONDS);
+                logger.debug("Found a waiting HttpExchange {}", t.toString());
+                setHttpResponse(t, message);
+            } catch (IOException e) {
+                e.printStackTrace();
+                throw new IllegalStateException("Polling has failed due to " + e.getMessage());
+            }catch (InterruptedException e) {
+                throw new IllegalStateException("Request Queue is still empty after timeout, impossible to send DTO");
         }
+
     }
 
 

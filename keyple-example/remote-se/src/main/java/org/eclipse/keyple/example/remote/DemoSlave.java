@@ -66,7 +66,7 @@ public class DemoSlave {
         }
     }
 
-    public void connect() throws KeypleReaderNotFoundException, InterruptedException, IOException {
+    public void connect() throws KeypleReaderException, InterruptedException, IOException {
 
 
         logger.info("Boot DemoSlave LocalReader ");

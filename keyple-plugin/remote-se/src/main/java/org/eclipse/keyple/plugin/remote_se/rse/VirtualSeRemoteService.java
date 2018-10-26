@@ -16,6 +16,7 @@ import org.eclipse.keyple.seproxy.ProxyReader;
 import org.eclipse.keyple.seproxy.SeProxyService;
 import org.eclipse.keyple.seproxy.SeResponseSet;
 import org.eclipse.keyple.seproxy.event.ReaderEvent;
+import org.eclipse.keyple.seproxy.exception.KeypleReaderException;
 import org.eclipse.keyple.seproxy.exception.KeypleReaderNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,7 +50,7 @@ public class VirtualSeRemoteService implements DtoDispatcher{
         this.sessionManager = new VirtualSeSessionManager();
 
         //Instanciate Plugin
-        this.plugin = new RsePlugin();
+        this.plugin = new RsePlugin(sessionManager);
         seProxyService.addPlugin(this.plugin);
     }
 
@@ -105,21 +106,21 @@ public class VirtualSeRemoteService implements DtoDispatcher{
             String nativeReaderName = keypleDTO.getNativeReaderName();
             String clientNodeId = keypleDTO.getNodeId();
 
-            //create a new session in master
-            IReaderSession rseSession  = sessionManager.createSession(nativeReaderName,clientNodeId);
-
-            //DtoSender sends Dto when the session requires to
-            ((ReaderSessionImpl) rseSession).addObserver(transportDto.getDtoSender());
-
             //create a virtual Reader
-            String virtualName = plugin.createVirtualReader(nativeReaderName, rseSession);
+            RseReader virtualReader = null;
+            try {
+                virtualReader = (RseReader) plugin.createVirtualReader(clientNodeId ,nativeReaderName, this.dtoSender);
+                // response
+                JsonObject respBody = new JsonObject();
+                respBody.add("statusCode", new JsonPrimitive(0));
+                out = transportDto.nextTransportDTO(new KeypleDto(KeypleDtoHelper.READER_CONNECT,
+                        respBody.toString(), false, virtualReader.getSession().getSessionId(),nativeReaderName,virtualReader.getName(), clientNodeId));
+            } catch (KeypleReaderException e) {
+                //virtual reader for remote reader already exists
+                e.printStackTrace();
+                out = transportDto.nextTransportDTO(KeypleDtoHelper.ErrorDTO());
 
-            // response
-            JsonObject respBody = new JsonObject();
-            respBody.add("statusCode", new JsonPrimitive(0));
-            out = transportDto.nextTransportDTO(new KeypleDto(KeypleDtoHelper.READER_CONNECT,
-                    respBody.toString(), false, rseSession.getSessionId(),nativeReaderName,virtualName, clientNodeId));
-
+            }
         } else if (keypleDTO.getAction().equals(KeypleDtoHelper.READER_DISCONNECT)) {
             logger.info("**** ACTION - READER_DISCONNECT ****");
 

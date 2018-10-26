@@ -74,14 +74,13 @@ public class NativeSeRemoteService implements RseClient, DtoDispatcher {
 
             // parse response
             JsonObject body = JsonParser.getGson().fromJson(keypleDTO.getBody(), JsonObject.class);
-            String sessionId = keypleDTO.getSessionId();
             Integer statusCode = body.get("statusCode").getAsInt();
             String nativeReaderName = keypleDTO.getNativeReaderName();
 
             // reader connection was a success
             if (statusCode == 0) {
                 try {
-                    // observe reader
+                    // observe reader to propagate reader events
                     ProxyReader localReader = this.findLocalReader(nativeReaderName);
                     if (localReader instanceof AbstractObservableReader) {
                         logger.debug(
@@ -90,7 +89,6 @@ public class NativeSeRemoteService implements RseClient, DtoDispatcher {
                         ((AbstractObservableReader) localReader).addObserver(this);
                     }
                     //todo store sessionId in reader as a parameter?
-
                     //nseSessionManager.addNewSession(sessionId, localReader.getName());
 
                 } catch (KeypleReaderNotFoundException e) {
@@ -152,7 +150,7 @@ public class NativeSeRemoteService implements RseClient, DtoDispatcher {
      * @param options
      */
     @Override
-    public void connectReader(String nodeId, ProxyReader localReader, Map<String, Object> options) {
+    public void connectReader(String nodeId, ProxyReader localReader, Map<String, Object> options) throws KeypleReaderException{
         logger.info("connectReader {} {}", localReader.getName(), options);
 
         JsonObject jsonObject = new JsonObject();
@@ -167,13 +165,11 @@ public class NativeSeRemoteService implements RseClient, DtoDispatcher {
     public void disconnectReader(String nodeId, ProxyReader localReader) throws KeypleReaderException {
         logger.info("disconnectReader {} {}", localReader.getName());
 
-        //JsonObject jsonObject = new JsonObject();
-        //jsonObject.add("nativeReaderName", new JsonPrimitive(localReader.getName()));
-        //jsonObject.add("nodeId", new JsonPrimitive(nodeId));
-        //
         //String data = jsonObject.toString();
-
         dtoSender.sendDTO(new KeypleDto(KeypleDtoHelper.READER_DISCONNECT, "{}", true, null, localReader.getName(), null, nodeId));
+
+        //stop propagating the local reader events
+        ((AbstractObservableReader) localReader).removeObserver(this);
 
     }
 
@@ -193,21 +189,21 @@ public class NativeSeRemoteService implements RseClient, DtoDispatcher {
     /**
      * Internal method to find a local reader by its name accross multiple plugins
      * 
-     * @param readerName
+     * @param nativeReaderName
      * @return
      * @throws KeypleReaderNotFoundException
      */
-    private ProxyReader findLocalReader(String readerName) throws KeypleReaderNotFoundException {
-        logger.debug("Find local reader by name {} in {} plugin(s)", readerName,
+    private ProxyReader findLocalReader(String nativeReaderName) throws KeypleReaderNotFoundException {
+        logger.debug("Find local reader by name {} in {} plugin(s)", nativeReaderName,
                 seProxyService.getPlugins().size());
         for (ReaderPlugin plugin : seProxyService.getPlugins()) {
             try {
-                return plugin.getReader(readerName);
+                return plugin.getReader(nativeReaderName);
             } catch (KeypleReaderNotFoundException e) {
                 // continue
             }
         }
-        throw new KeypleReaderNotFoundException(readerName);
+        throw new KeypleReaderNotFoundException(nativeReaderName);
     }
 
     // RseClient

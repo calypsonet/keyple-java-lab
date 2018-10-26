@@ -13,6 +13,8 @@ import java.net.Inet4Address;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Random;
+
 import org.eclipse.keyple.example.remote.common.ClientNode;
 import org.eclipse.keyple.example.remote.common.ServerNode;
 import org.eclipse.keyple.example.remote.common.TransportFactory;
@@ -25,7 +27,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("PMD.AvoidUsingHardCodedIP")
 public class WskFactory extends TransportFactory {
 
-    Integer port = 8001;
+    Integer port = 8000 + new Random().nextInt((100 - 0) + 1) + 0;
     String keypleUrl = "/keypleDTO";
     String bindUrl = "0.0.0.0";
     String protocol = "http://";

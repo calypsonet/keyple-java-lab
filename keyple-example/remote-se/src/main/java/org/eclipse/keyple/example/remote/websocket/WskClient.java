@@ -94,4 +94,9 @@ public class WskClient extends WebSocketClient implements ClientNode {
     public void update(KeypleDto event) {
         this.sendDTO(event);
     }
+
+    @Override
+    public void disconnect() {
+        this.getConnection().close();
+    }
 }

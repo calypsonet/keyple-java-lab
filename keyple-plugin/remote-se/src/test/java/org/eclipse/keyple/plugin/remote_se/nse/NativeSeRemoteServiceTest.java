@@ -8,7 +8,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-@RunWith(MockitoJUnitRunner.class)
+//@RunWith(MockitoJUnitRunner.class)
 public class NativeSeRemoteServiceTest {
 
     @Mock
@@ -23,13 +23,6 @@ public class NativeSeRemoteServiceTest {
     public void Setup(){
 
         nse = new NativeSeRemoteService(dtoSender);
-
-    }
-
-    @Test
-    public void testConnect(){
-
-
 
     }
 

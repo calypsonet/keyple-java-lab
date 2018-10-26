@@ -153,6 +153,11 @@ public class WsPClient implements ClientNode {
         this.startPollingWorker(nodeId);
     }
 
+    @Override
+    public void disconnect() {
+        //todo
+    }
+
 
     private JsonObject httpPOSTJson(HttpURLConnection conn, String json) throws IOException {
         logger.trace("Url {} HTTP POST  : {} ", conn.getURL(), json);

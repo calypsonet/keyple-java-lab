@@ -12,7 +12,8 @@ import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.InetSocketAddress;
 import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.*;
+
 import org.eclipse.keyple.example.remote.common.ServerNode;
 import org.eclipse.keyple.plugin.remote_se.transport.*;
 import org.eclipse.keyple.plugin.remote_se.transport.TransportDto;
@@ -31,13 +32,13 @@ public class WsPServer implements ServerNode {
     private String nodeId;
 
     private HttpServer server;
-    static private Integer MAX_CONNECTION = 5;
+    static private Integer MAX_CONNECTION = 10;
     private HttpHandler keypleDTOEndpoint;
     private HttpHandler pollingEndpoint;
 
     private static final Logger logger = LoggerFactory.getLogger(WsPServer.class);
 
-    private Queue<HttpExchange> requestQueue = new ConcurrentLinkedQueue<HttpExchange>();
+    private BlockingQueue<HttpExchange> requestQueue = new LinkedBlockingQueue<HttpExchange>();
 
     /**
      * Constructor
@@ -73,7 +74,7 @@ public class WsPServer implements ServerNode {
         server.setExecutor(java.util.concurrent.Executors.newCachedThreadPool()); // creates a
         // default
 
-        setPollingWorker(requestQueue);
+        //setPollingWorker(requestQueue);
         // executor
     }
 
@@ -114,11 +115,12 @@ public class WsPServer implements ServerNode {
 
     }
 
+    //todo enable this?
+
     /**
      * Free httpExchange after 15 secondes
      * 
      * @param queue
-     */
     private void setPollingWorker(final Queue<HttpExchange> queue) {
 
         Thread PollingWorker = new Thread() {
@@ -140,9 +142,6 @@ public class WsPServer implements ServerNode {
                                 lastHttpExchange.close();
                             }
                         }
-
-
-
                     }
 
                 } catch (Exception e) {
@@ -155,6 +154,7 @@ public class WsPServer implements ServerNode {
 
         PollingWorker.start();
     }
+     */
 
 
 

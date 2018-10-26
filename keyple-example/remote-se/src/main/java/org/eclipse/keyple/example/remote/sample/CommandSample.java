@@ -55,7 +55,7 @@ public class CommandSample {
             SeResponseSet seResponseSet = reader.transmit(new SeRequestSet(seRequest));
 
             logger.info("Received SYNCHRONOUSLY a 1rt SeResponseSet - isSuccessful : {}",
-                    seResponseSet!=null && seResponseSet.getSingleResponse() !=null && seResponseSet.getResponses().get(0).getApduResponses().get(0).isSuccessful());
+                    seResponseSet);
 
             // build 1st seRequestSet with keep channel open to true
             ReadRecordsCmdBuild poReadRecordCmd_T2Env2 = new ReadRecordsCmdBuild(PoRevision.REV3_1,
@@ -70,8 +70,7 @@ public class CommandSample {
             SeResponseSet seResponseSet2 = reader.transmit(new SeRequestSet(seRequest2));
 
             logger.info("Received SYNCHRONOUSLY a 2nd SeResponseSet - isSuccessful : {}",
-                    seResponseSet2!=null &&seResponseSet2.getSingleResponse() !=null && seResponseSet2.getResponses().get(0).getApduResponses().get(0).isSuccessful()
-                         );
+                    seResponseSet2);
 
 
         } catch (KeypleReaderNotFoundException e) {

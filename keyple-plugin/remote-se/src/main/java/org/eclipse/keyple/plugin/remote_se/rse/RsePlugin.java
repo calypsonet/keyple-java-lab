@@ -8,11 +8,13 @@
 
 package org.eclipse.keyple.plugin.remote_se.rse;
 
+import org.eclipse.keyple.plugin.remote_se.transport.DtoSender;
 import org.eclipse.keyple.seproxy.ProxyReader;
 import org.eclipse.keyple.seproxy.ReaderPlugin;
 import org.eclipse.keyple.seproxy.event.ObservablePlugin;
 import org.eclipse.keyple.seproxy.event.PluginEvent;
 import org.eclipse.keyple.seproxy.event.ReaderEvent;
+import org.eclipse.keyple.seproxy.exception.KeypleReaderException;
 import org.eclipse.keyple.seproxy.exception.KeypleReaderNotFoundException;
 import org.eclipse.keyple.util.Observable;
 import org.slf4j.Logger;
@@ -36,11 +38,12 @@ public class RsePlugin extends Observable implements ObservablePlugin {
     // virtal readers
     private final SortedSet<RseReader> rseReaders = new TreeSet<RseReader>();
 
+    private VirtualSeSessionManager sessionManager;
     /**
      * Only {@link VirtualSeRemoteService} can instiancite a RsePlugin
      */
-    RsePlugin() {
-        //sessionManager = new VirtualSeSessionManager();
+    RsePlugin(VirtualSeSessionManager sessionManager) {
+        this.sessionManager = sessionManager;
         logger.info("RemoteSePlugin");
     }
 
@@ -89,62 +92,67 @@ public class RsePlugin extends Observable implements ObservablePlugin {
 
     /**
      * Create a virtual reader
-     * 
-     * @param localReaderName
-     * @param session
-     * @return
+     *
      */
-    protected String createVirtualReader(String localReaderName, IReaderSession session) {
-        logger.debug("createVirtualReader {}", localReaderName);
+    protected ProxyReader createVirtualReader(String clientNodeId, String nativeReaderName, DtoSender dtoSender) throws KeypleReaderException {
+        logger.debug("createVirtualReader for nativeReader {}", nativeReaderName);
+
+        //create a new session for the new reader
+        IReaderSession session  = sessionManager.createSession(nativeReaderName,clientNodeId);
+
+        //DtoSender sends Dto when the session requires to
+        ((ReaderSessionImpl) session).addObserver(dtoSender);
 
         // check if reader is not already connected (by localReaderName)
-        if (!isReaderConnected(localReaderName)) {
-            logger.info("Connecting a new RemoteSeReader with localReaderName {} with session {}", localReaderName,
+        if (!isReaderConnected(nativeReaderName)) {
+            logger.info("Connecting a new RemoteSeReader with localReaderName {} with session {}", nativeReaderName,
                     session.getSessionId());
 
-            RseReader rseReader = new RseReader(session, localReaderName);
+            RseReader rseReader = new RseReader(session, nativeReaderName);
             rseReaders.add(rseReader);
             notifyObservers(new PluginEvent(getName(), rseReader.getName(),
                     PluginEvent.EventType.READER_CONNECTED));
             logger.info("*****************************");
             logger.info(" CONNECTED {} ", rseReader.getName());
             logger.info("*****************************");
-            return rseReader.getName();
+            return rseReader;
         } else {
-            try {
-                logger.warn("RemoteSeReader with localReaderName {} is already connected", localReaderName);
-                return this.getReaderByRemoteName(localReaderName).toString();
-            } catch (KeypleReaderNotFoundException e) {
-                e.printStackTrace();
-                return null;
-            }
+            throw  new KeypleReaderException("Virtual Reader already exists");
         }
     }
 
     /**
      * Delete a virtual reader
      *
-     * @param name
+     * @param nativeReaderName
      * @return
      */
-    protected void disconnectRemoteReader(String name) throws KeypleReaderNotFoundException {
-        logger.debug("disconnectRemoteReader {}", name);
+    protected void disconnectRemoteReader(String nativeReaderName) throws KeypleReaderNotFoundException {
+        logger.debug("disconnectRemoteReader {}", nativeReaderName);
 
         // check if reader is not already connected (by name)
-        if (isReaderConnected(name)) {
-            logger.info("DisconnectRemoteReader RemoteSeReader with name {} with session {}", name);
+        if (isReaderConnected(nativeReaderName)) {
+            logger.info("DisconnectRemoteReader RemoteSeReader with name {} with session {}", nativeReaderName);
 
-            rseReaders.remove(this.getReaderByRemoteName(name));
+            //retrieve virtual reader to delete
+            RseReader virtualReader = (RseReader) this.getReaderByRemoteName(nativeReaderName);
 
-            notifyObservers(new PluginEvent(getName(), name,
+            //remove observers
+            ((ReaderSessionImpl) virtualReader.getSession()).clearObservers();
+
+            //remove reader
+            rseReaders.remove(virtualReader);
+
+            //notify of disconnect
+            notifyObservers(new PluginEvent(getName(), nativeReaderName,
                     PluginEvent.EventType.READER_DISCONNECTED));
 
             logger.info("*****************************");
-            logger.info(" DISCONNECTED {} ", name);
+            logger.info(" DISCONNECTED {} ", nativeReaderName);
             logger.info("*****************************");
 
         } else {
-            logger.warn("RemoteSeReader with name {} is already connected", name);
+            logger.warn("No remoteSeReader with name {} found", nativeReaderName);
         }
         // todo errors
     }

@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Random;
 
 /**
  * Web service factory, get @{@link org.eclipse.keyple.example.remote.wspolling.client_retrofit.WsPRetrofitClient} and {@link WsPServer}
@@ -24,7 +25,7 @@ import java.io.IOException;
 @SuppressWarnings("PMD.AvoidUsingHardCodedIP")
 public class WsPollingRetrofitFactory extends TransportFactory {
 
-    Integer port = 8007;
+    Integer port = 8000 + new Random().nextInt((100 - 0) + 1) + 0;
     String pollingUrl = "/polling";
     String keypleUrl = "/keypleDTO";
     String clientNodeId = "local1";
