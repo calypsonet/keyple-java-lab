@@ -100,7 +100,6 @@ Once the configuration of the VirtualSeRemoteService done, events are sent to ob
 While configuring both services in master and slaves sides, you need to configure two Interfaces so what they can discuss together ! At the most abstract level, each side should send messages to the other side. Those message are encoded into ```KeypleDto```Objects. To be send and receive each Terminal will use a ```Dtosender``` to sends KeypleDto and a ```Dtosender```to receive KeypleDto. 
 To make it easier to implement it on simple use cases, you can use the ````TransportNode```` interface that join a ```DtoSender``` and a ```DtoDispatcher``` on a single interface. 
 
-
 Examples : 
 
 The project org.eclipse.keyple.example.remote.websocket implements a transport layer based on web socket protocol where ```WskClient``` is a client ```TransportNode``` and ```WskServer``` is a server ```TransportNode```. Those two objects are meant to discuss with each other through ```Dtosender``` and ```Dtosender```, then can be used as node for the whole Remote Se plugin configuration.
@@ -108,5 +107,6 @@ The project org.eclipse.keyple.example.remote.websocket implements a transport l
 A similar example can be found in the org.eclipse.keyple.example.remote.wspolling package
 
 
+## Project : Remote Plugin Examples
 
 
