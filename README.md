@@ -4,25 +4,28 @@ This repository is used as a lab to develop and to test prototypes. It's structu
 
 
 
-## Project : Remote SE plugin
+## Project : Remote SE Plugin
 
-This projects aims at prototyping a Remote SE Plugin and multiple transports layer (websocket, web service REST). A Slave terminal exposes one or multiple Native Reader to a Master Terminal. The Master Terminal interacts with those readers as if they were local, in a sense they are virtualized.
+This project aims at prototyping the concept of an interaction between a Terminal and a remote Secure Element. 
+The Secure Element is inserted into a Reader connected to a Slave terminal, which exposes the SE to a Master Terminal that will pilot the interaction. The Slave terminal connects one or multiple Native Reader to the Master Terminal. The Master Terminal interacts with those readers as if they were local, in a sense they are virtualized.  
 
-The configuration in both side is rather simple. 
+The Remote SE plugin is deployed on the Master side to pilot interactions with Slave Terminals. Independant from transport layer, the remote SE plugin is being prototyped with various transports layers (websocket, web service REST). 
+
 
 ### Slave terminal configuration
 
-Slave terminal should declare the readers to the SeProxyService via the plugin mecanism. Then, it connects one or multple readers using the NativeSeREmoteService. 
+Like any Keyple projects, Native Readers are exposed to the SeProxyService via the ```ReaderPlugin``` API. In the case of of Remote Se configuration, the Slave Terminal give control of one or multiple readers to the Master Terminal using the ```NativeSeREmoteService``` API. While doing so, the connected readers are no longer piloted at local level, all events are propagated to the Master Terminal. Only the Master Terminal is able to pilot the connected readers and their interactions with inserted Secure Element.  
 
+To connect a native reader on the slave terminal use the API ```seRemoteService.connectReader(nodeId, reader, options)``` where nodeId is the terminalId, reader is the reader to connect and options is a map of options (not required for all readers)
 ```java
     //Get a reference to the ProxyReader (in this example, a stubReader)
-    ProxyReader localReader = (StubReader) stubPlugin.getReader("stubReaderTest");
+    ProxyReader localReader = SeProxyService.getInstance().getReader("stubReaderTest");
     
-    //instanciate the NativeRemoteSeService with a NodeConfiguration (needed to connect to Master)
+    //instanciate the NativeRemoteSeService with a DtoSender (needed to send message to Master, see below)
     NativeSeRemoteService seRemoteService = new NativeSeRemoteService(node);
     
     //Connect the reader with a NodeId (terminalId) and a Map of options
-    seRemoteService.connectReader(nodeId, localReader, options);
+    seRemoteService.connectReader("slaveTerminal1", localReader, new HashMap<String, Object>());
 
 ```
 
@@ -35,7 +38,7 @@ This module contains the core of the Remote Se Plugin Mecanism in both Master si
 Master side : 
 
 ```java
-    //Instanciate the VirtualSeRemoteService with a NodeConfiguration (needed to connect to Slave)
+    //Instanciate the VirtualSeRemoteService with a DtoSender (needed to send message to Slave, see below)
     VirtualSeRemoteService virtualSeRemoteService = new VirtualSeRemoteService(SeProxyService.getInstance(), node);
     
     //Get the instanciate RemoteSe PLugin
@@ -53,10 +56,10 @@ Master side :
 Once the configuration of the VirtualSeRemoteService done, events are sent to observers of the Remote Se Plugin as if connecting readers were local. 
 
 ```java
-
+    //get the rse plugin
     ReaderPlugin rsePlugin = virtualSeRemoteService.getPlugin();
 
-    //Observe the plugin for events like READER_CONNECTED or SE_INSERTED 
+    //Observe the rse plugin for events like READER_CONNECTED
     ((Observable) rsePlugin).addObserver(this);
     
     /**
@@ -95,16 +98,16 @@ Once the configuration of the VirtualSeRemoteService done, events are sent to ob
     
 ```
 
-### Configuring the nodes
+### Configuring VirtualSeRemoteService and NativeSeRemoteService
 
-While configuring both services in master and slaves sides, you need to configure two Interfaces so what they can discuss together ! At the most abstract level, each side should send messages to the other side. Those message are encoded into ```KeypleDto```Objects. To be send and receive each Terminal will use a ```Dtosender``` to sends KeypleDto and a ```Dtosender```to receive KeypleDto. 
-To make it easier to implement it on simple use cases, you can use the ````TransportNode```` interface that join a ```DtoSender``` and a ```DtoDispatcher``` on a single interface. 
+While configuring both services in Master and Slaves sides, you need to provide two Interfaces so what they can discuss together. Each service sends and receives messages from the other side. Those messages are encoded into a defined format : ```KeypleDto```Objects. To be send and receive each Terminal will use a ```Dtosender``` Object to send KeypleDto messages and a ```DtoDispatcher``` to receive KeypleDto messages. 
+When using your own implementation of the transport layer you need to implement both Interfaces on each side and bind them to the remote services. 
+
+In the provided example, we use a unique interface to send and receive KeypleDtos object, the ````TransportNode```` interface that extends ```DtoSender``` and a embbeds a ```DtoDispatcher``` . 
 
 Examples : 
-
-The project org.eclipse.keyple.example.remote.websocket implements a transport layer based on web socket protocol where ```WskClient``` is a client ```TransportNode``` and ```WskServer``` is a server ```TransportNode```. Those two objects are meant to discuss with each other through ```Dtosender``` and ```Dtosender```, then can be used as node for the whole Remote Se plugin configuration.
-
-A similar example can be found in the org.eclipse.keyple.example.remote.wspolling package
+- The project org.eclipse.keyple.example.remote.websocket implements a transport layer based on web socket protocol where ```WskClient``` is a web socket client that implements ```TransportNode``` and ```WskServer``` is a web socket server that implements```TransportNode```. They are meant to exchange messages with each other, as they implements ```TransportNode``` they can be used to configure the Remote Servces of the Remote Plugin. 
+- A similar example can be found in the org.eclipse.keyple.example.remote.wspolling package.
 
 
 ## Project : Remote Plugin Examples
