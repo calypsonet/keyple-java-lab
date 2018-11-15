@@ -22,10 +22,10 @@ To connect a native reader on the slave terminal use the API ```seRemoteService.
     ProxyReader localReader = SeProxyService.getInstance().getReader("stubReaderTest");
     
     //instanciate the NativeRemoteSeService with a DtoSender (needed to send message to Master, see below)
-    NativeSeRemoteService seRemoteService = new NativeSeRemoteService(node);
+    INativeReaderService nativeReaderService = new NativeReaderServiceImpl(node);
     
     //Connect the reader with a NodeId (terminalId) and a Map of options
-    seRemoteService.connectReader("slaveTerminal1", localReader, new HashMap<String, Object>());
+    nativeReaderService.connectReader("slaveTerminal1", localReader, new HashMap<String, Object>());
 
 ```
 
@@ -39,13 +39,13 @@ Master side :
 
 ```java
     //Instanciate the VirtualSeRemoteService with a DtoSender (needed to send message to Slave, see below)
-    VirtualSeRemoteService virtualSeRemoteService = new VirtualSeRemoteService(SeProxyService.getInstance(), node);
+    VirtualReaderService virtualReaderService = new VirtualReaderService(SeProxyService.getInstance(), node);
     
     //Get the instanciate RemoteSe PLugin
-    ReaderPlugin rsePlugin = virtualSeRemoteService.getPlugin();
+    ReaderPlugin remoteSePlugin = virtualReaderService.getPlugin();
     
     //Observe the plugin for events like READER_CONNECTED or SE_INSERTED 
-    ((Observable) rsePlugin).addObserver(this);
+    ((Observable) remoteSePlugin).addObserver(this);
 
 ``` 
 
@@ -56,11 +56,10 @@ Master side :
 Once the configuration of the VirtualSeRemoteService done, events are sent to observers of the Remote Se Plugin as if connecting readers were local. 
 
 ```java
-    //get the rse plugin
-    ReaderPlugin rsePlugin = virtualSeRemoteService.getPlugin();
 
-    //Observe the rse plugin for events like READER_CONNECTED
-    ((Observable) rsePlugin).addObserver(this);
+    ReaderPlugin remoteSePlugin = virtualReaderService.getPlugin();
+
+    ((Observable) remoteSePlugin).addObserver(this);
     
     /**
      * Receives Event from RSE Plugin
@@ -78,7 +77,7 @@ Once the configuration of the VirtualSeRemoteService done, events are sent to ob
                 case READER_CONNECTED:
                     //a new virtual reader is connected, let's observe it
                         logger.info("Add ServerTicketingApp as a Observer of RSE reader");
-                        rsePlugin.getReader(event.getReaderName()).addObserver(masterThread);
+                        remoteSEPlugin.getReader(event.getReaderName()).addObserver(masterThread);
                     break;
                 //.. more events
             }

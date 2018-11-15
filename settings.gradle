@@ -11,8 +11,11 @@
 rootProject.name = 'keyple-java-lab'
 println '** ' + rootProject.name + ' initialization phase.'
 
-include 'keyple-plugin:remote-se'
-project(':keyple-plugin:remote-se').name = "keyple-plugin-remote-se"
+include 'keyple-plugin:remotese'
+project(':keyple-plugin:remotese').name = "keyple-plugin-remotese"
 
-include 'keyple-example:remote-se'
-project(':keyple-example:remote-se').name = "keyple-example-remote-se"
+include 'keyple-example:remotese'
+project(':keyple-example:remotese').name = "keyple-example-remotese"
+
+include 'keyple-example:android-remotese-server'
+project(':keyple-example:android-remotese-server').name = "keyple-example-android-remotese-server"
