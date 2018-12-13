@@ -6,92 +6,22 @@ buildscript {
     }
 }
 
-plugins {
-    id "com.diffplug.gradle.spotless" version "3.14.0"
+subprojects {
+    group 'org.eclipse.keyple'
 }
 
 
 
 subprojects {
+
     group 'org.eclipse.keyple'
-
-
-}
-
-allprojects {
-
-    configurations.all {
-        // check for updates every build
-        resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
-    }
 
     repositories {
         mavenLocal()
         mavenCentral()
+        google()
         jcenter()
     }
-
-    apply plugin: 'pmd'
-
-    pmd {
-        ruleSets = [
-                "java-basic",
-                "java-braces",
-                // "java-strings",
-                // "java-imports",
-                // "java-unnecessary",
-                // "java-unusedcode",
-                //"java-metrics",
-                // "java-empty",
-                // "java-codesize",
-                // "java-clone",
-                // "java-typeresolution",
-                // "java-strictexception",
-                // "java-finalizers",
-                // "java-migrating",
-                // "java-logging-java",
-                // "java-controversial"  // 8 issues
-                // "java-sunsecure"      // 1 issue
-                // "java-junit"          // 1 issue
-                // "java-optimizations"  // 44 issues
-                // "java-naming",        // 9 issues
-                // "java-coupling"       // 2 issues
-                // "java-design"         // 19 issues
-                // "java-comments"       // 87 issues --> Kind of conflicting with spotless
-        ]
-    }
-
-    task copyLICENSE(type: Copy) {
-        from file("${rootDir}/LICENSE")
-        into file("${buildDir}/resources/main/META-INF/")
-    }
-
-    task copyNOTICE(type: Copy) {
-        from file("${rootDir}/NOTICE.md")
-        into file("${buildDir}/resources/main/META-INF/")
-    }
-
 }
 
 
-
-spotless {
-    java {
-        target '**/*.java'
-
-        licenseHeaderFile '.build/spotless.license.txt'
-
-        importOrder 'java', 'javax', 'org', 'com', 'com.diffplug', ''
-
-        removeUnusedImports()
-
-        eclipse().configFile '.build/spotless.eclipseformat.xml'
-    }
-
-    format 'misc', {
-        target '**/*.java', '**/*.gradle', '**/*.yml', '**/*.md'
-
-        indentWithSpaces()
-        endWithNewline()
-    }
-}
