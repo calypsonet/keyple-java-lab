@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  *
  */
-package org.eclipse.keyple.example.android.nfc;
+package org.eclipse.keyple.demo.remotese.android;
 
 import org.eclipse.keyple.plugin.android.nfc.AndroidNfcPlugin;
 import org.eclipse.keyple.seproxy.SeProxyService;
@@ -57,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
          * Define UI elements
          */
         LOG.debug("onCreate");
-        setContentView(org.eclipse.keyple.example.android.nfc.R.layout.activity_main);
+        setContentView(org.eclipse.keyple.demo.remotese.android.R.layout.activity_main);
 
         setupNavDrawer();
         /*
@@ -78,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
         NFCTestFragment nfcTestFragment = NFCTestFragment.newInstance();
         FragmentManager fragmentManager = getFragmentManager();
         fragmentManager.beginTransaction()
-                .replace(org.eclipse.keyple.example.android.nfc.R.id.fragment_container,
+                .replace(org.eclipse.keyple.demo.remotese.android.R.id.fragment_container,
                         nfcTestFragment, TAG_NFC_TEST_VIEW)
                 .addToBackStack(null).commit();
     }
@@ -88,11 +88,11 @@ public class MainActivity extends AppCompatActivity {
      * Configure Navigation Drawer
      */
     private void setupNavDrawer() {
-        mDrawerLayout = findViewById(org.eclipse.keyple.example.android.nfc.R.id.drawer_layout);
+        mDrawerLayout = findViewById(org.eclipse.keyple.demo.remotese.android.R.id.drawer_layout);
 
         // Drawer configuration
         NavigationView navigationView =
-                findViewById(org.eclipse.keyple.example.android.nfc.R.id.nav_view);
+                findViewById(org.eclipse.keyple.demo.remotese.android.R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(
                 new NavigationView.OnNavigationItemSelectedListener() {
                     @Override
@@ -107,7 +107,7 @@ public class MainActivity extends AppCompatActivity {
                         LOG.debug("Item selected from drawer: " + menuItem.getTitle());
 
                         switch (menuItem.getItemId()) {
-                            case org.eclipse.keyple.example.android.nfc.R.id.nav_nfc:
+                            case org.eclipse.keyple.demo.remotese.android.R.id.nav_nfc:
                                 activateNFCTestView();
                                 break;
 
@@ -120,7 +120,7 @@ public class MainActivity extends AppCompatActivity {
                 });
 
         // Toolbar
-        Toolbar toolbar = findViewById(org.eclipse.keyple.example.android.nfc.R.id.toolbar);
+        Toolbar toolbar = findViewById(org.eclipse.keyple.demo.remotese.android.R.id.toolbar);
         setSupportActionBar(toolbar);
 
         // Hamburger icon
@@ -128,7 +128,7 @@ public class MainActivity extends AppCompatActivity {
         assert actionbar != null;
         actionbar.setDisplayHomeAsUpEnabled(true);
         actionbar.setHomeAsUpIndicator(
-                org.eclipse.keyple.example.android.nfc.R.drawable.ic_menu_black_24dp);
+                org.eclipse.keyple.demo.remotese.android.R.drawable.ic_menu_black_24dp);
 
     }
 

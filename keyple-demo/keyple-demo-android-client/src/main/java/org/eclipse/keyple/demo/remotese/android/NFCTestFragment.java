@@ -8,23 +8,23 @@
  * SPDX-License-Identifier: EPL-2.0
  *
  */
-package org.eclipse.keyple.example.android.nfc;
+package org.eclipse.keyple.demo.remotese.android;
 
 
 import android.content.res.AssetManager;
 
-import org.eclipse.keyple.example.remote.common.ClientNode;
 import org.eclipse.keyple.example.remote.wspolling.client_retrofit.WsPollingRetrofitFactory;
 import org.eclipse.keyple.plugin.android.nfc.AndroidNfcFragment;
 import org.eclipse.keyple.plugin.android.nfc.AndroidNfcPlugin;
 import org.eclipse.keyple.plugin.android.nfc.AndroidNfcProtocolSettings;
 import org.eclipse.keyple.plugin.android.nfc.AndroidNfcReader;
-import org.eclipse.keyple.plugin.remotese.nativese.INativeReaderService;
+import org.eclipse.keyple.plugin.remotese.nativese.NativeReaderService;
 import org.eclipse.keyple.plugin.remotese.nativese.NativeReaderServiceImpl;
-import org.eclipse.keyple.seproxy.ProxyReader;
+import org.eclipse.keyple.plugin.remotese.transport.ClientNode;
+import org.eclipse.keyple.plugin.remotese.transport.KeypleRemoteException;
 import org.eclipse.keyple.seproxy.SeProxyService;
 import org.eclipse.keyple.seproxy.exception.KeypleBaseException;
-import org.eclipse.keyple.seproxy.exception.KeypleReaderException;
+import org.eclipse.keyple.seproxy.message.ProxyReader;
 import org.eclipse.keyple.seproxy.protocol.SeProtocolSetting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +46,6 @@ import android.widget.Toast;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
 import java.util.Properties;
 
 
@@ -74,7 +73,7 @@ public class NFCTestFragment extends Fragment{
 
     //Keyple Objects
     ProxyReader mNativeReader;
-    INativeReaderService mSeRemoteService;
+    NativeReaderService mSeRemoteService;
 
     //Transport Objects
     ClientNode mRseClient;
@@ -113,13 +112,13 @@ public class NFCTestFragment extends Fragment{
 
         // Define UI components
         View view =
-                inflater.inflate(R.layout.fragment_nfc_test,
+                inflater.inflate(org.eclipse.keyple.demo.remotese.android.R.layout.fragment_nfc_test,
                         container, false);
-        mText = view.findViewById(R.id.text);
-        mConnectSwitch = view.findViewById(R.id.switchReaderConnect);
-        mCreateSwitch = view.findViewById(R.id.switchCreateReader);
-        mConnectServer = view.findViewById(R.id.connectServer);
-        mSpinner = view.findViewById(R.id.waitingSmartcard);
+        mText = view.findViewById(org.eclipse.keyple.demo.remotese.android.R.id.text);
+        mConnectSwitch = view.findViewById(org.eclipse.keyple.demo.remotese.android.R.id.switchReaderConnect);
+        mCreateSwitch = view.findViewById(org.eclipse.keyple.demo.remotese.android.R.id.switchCreateReader);
+        mConnectServer = view.findViewById(org.eclipse.keyple.demo.remotese.android.R.id.connectServer);
+        mSpinner = view.findViewById(org.eclipse.keyple.demo.remotese.android.R.id.waitingSmartcard);
 
         //init UI component
         mSpinner.setVisibility(View.GONE);
@@ -131,7 +130,7 @@ public class NFCTestFragment extends Fragment{
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 
                 if (isChecked) {
-                    mNativeReader =  createAndroidNfcReader();
+                    mNativeReader =  createNativeReader();
                 } else {
                     destroyAndroidNfcReader();
                 }
@@ -181,7 +180,7 @@ public class NFCTestFragment extends Fragment{
 
     }
 
-    private ProxyReader createAndroidNfcReader(){
+    private ProxyReader createNativeReader(){
 
         // 2 - add NFC Fragment to activity in order to communicate with Android Plugin
         LOG.info("Add Keyple NFC Fragment to activity in order to "
@@ -193,7 +192,7 @@ public class NFCTestFragment extends Fragment{
         try {
             // 3 - Configure Local Reader
             LOG.info("Configure Local Reader");
-            ProxyReader localReader = SeProxyService.getInstance().getPlugin("AndroidNFCPlugin").getReader("AndroidNfcReader");
+            AndroidNfcReader localReader = (AndroidNfcReader) SeProxyService.getInstance().getPlugin("AndroidNFCPlugin").getReader("AndroidNfcReader");
 
             localReader.setParameter("FLAG_READER_PRESENCE_CHECK_DELAY", "5000");
             localReader.setParameter("FLAG_READER_NO_PLATFORM_SOUNDS", "0");
@@ -201,7 +200,7 @@ public class NFCTestFragment extends Fragment{
 
 
             // with this protocol settings we activate the nfc for ISO1443_4 protocol
-            ((AndroidNfcReader) localReader).addSeProtocolSetting(
+            localReader.addSeProtocolSetting(
                     new SeProtocolSetting(AndroidNfcProtocolSettings.SETTING_PROTOCOL_ISO14443_4));
 
             Toast.makeText(getActivity(), "New Reader Created : "+ localReader.getName(), Toast.LENGTH_LONG).show();
@@ -233,7 +232,7 @@ public class NFCTestFragment extends Fragment{
 
     }
 
-    private INativeReaderService connect(){
+    private NativeReaderService connect(){
         //server configuration
         //String keypleUrl = "/keypleDTO";
         //String pollingUrl = "/polling";
@@ -243,7 +242,7 @@ public class NFCTestFragment extends Fragment{
 
         // Setup RSE Client
         WsPollingRetrofitFactory transportFactory = new WsPollingRetrofitFactory(readConfig("DemoAndroidMasterServer.properties"), sNodeId);
-        mRseClient = transportFactory.getClient(false);
+        mRseClient = transportFactory.getClient();
 
         //Setup ClientNode to server
         mSeRemoteService = new NativeReaderServiceImpl(mRseClient);// ougoing traffic
@@ -263,9 +262,9 @@ public class NFCTestFragment extends Fragment{
         // The toggle is enabled
         try{
             LOG.info("Connect local reader to RSE plugin");
-            mSeRemoteService.connectReader(sNodeId, reader,  new HashMap<String, Object>());
+            mSeRemoteService.connectReader(reader,sNodeId);
             Toast.makeText(getActivity(), reader.getName() + " connected succesfully", Toast.LENGTH_LONG).show();
-        }catch (KeypleReaderException e){
+        }catch (KeypleRemoteException e){
             Toast.makeText(getActivity(), "An error occurs while connecting "+reader.getName(), Toast.LENGTH_LONG).show();
         }
     }
@@ -274,9 +273,9 @@ public class NFCTestFragment extends Fragment{
         // The toggle is enabled
         try{
             LOG.info("Connect local reader to RSE plugin");
-            mSeRemoteService.disconnectReader(sNodeId, reader);
+            mSeRemoteService.disconnectReader(reader,sNodeId);
             Toast.makeText(getActivity(), reader.getName() + " disconnected", Toast.LENGTH_LONG).show();
-        }catch (KeypleReaderException e){
+        }catch (KeypleRemoteException e){
             Toast.makeText(getActivity(), "An error occurs while disconnecting "+reader.getName(), Toast.LENGTH_LONG).show();
         }
 

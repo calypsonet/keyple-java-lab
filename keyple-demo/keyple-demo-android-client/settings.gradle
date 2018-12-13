@@ -1,0 +1,54 @@
+rootProject.name = 'keyple-demo-android-client'
+
+/* Keyple java */
+
+include ':java:component:keyple-core'
+project(':java:component:keyple-core').projectDir = file("../../../keyple-java/java/component/keyple-core")
+
+
+include ':java:component:keyple-calypso'
+project(':java:component:keyple-calypso').projectDir = file("../../../keyple-java/java/component/keyple-calypso")
+
+
+include ':keyple-plugin:android-nfc'
+project(':keyple-plugin:android-nfc').projectDir = file("../../../keyple-java/android/keyple-plugin/android-nfc")
+project(':keyple-plugin:android-nfc').name = "keyple-plugin-android-nfc"
+
+
+include ':java:component:keyple-plugin:remotese'
+project(':java:component:keyple-plugin:remotese').projectDir = file("../../../keyple-java/java/component/keyple-plugin/remotese")
+project(':java:component:keyple-plugin:remotese').name = "keyple-plugin-remotese"
+
+
+include ':java:component:keyple-plugin:stub'
+project(':java:component:keyple-plugin:stub').projectDir = file("../../../keyple-java/java/component/keyple-plugin/stub")
+project(':java:component:keyple-plugin:stub').name = "keyple-plugin-stub"
+
+
+include ':java:example:calypso:remotese'
+project(':java:example:calypso:remotese').projectDir = file("../../../keyple-java/java/example/calypso/remotese")
+project(':java:example:calypso:remotese').name = "example-remotese"
+
+
+include ':java:example:calypso:common'
+project(':java:example:calypso:common').projectDir = file("../../../keyple-java/java/example/calypso/common")
+project(':java:example:calypso:common').name = "example-calypso-common"
+
+//
+include ':java:example:calypso:pc'
+project(':java:example:calypso:pc').projectDir = file("../../../keyple-java/java/example/calypso/pc")
+project(':java:example:calypso:pc').name = "example-calypso-pc"
+
+
+include ':java:example:generic:common'
+project(':java:example:generic:common').projectDir = file("../../../keyple-java/java/example/generic/common")
+project(':java:example:generic:common').name = "example-generic-common"
+
+
+include ':java:example:generic:pc'
+project(':java:example:generic:pc').projectDir = file("../../../keyple-java/java/example/generic/pc")
+project(':java:example:generic:pc').name = "example-generic-pc"
+
+include ':java:component:keyple-plugin:pcsc'
+project(':java:component:keyple-plugin:pcsc').projectDir = file("../../../keyple-java/java/component/keyple-plugin/pcsc")
+project(':java:component:keyple-plugin:pcsc').name = "keyple-plugin-pcsc"
