@@ -1,13 +1,14 @@
 package org.cna.keyple.demo;
 
-import org.eclipse.keyple.example.remote.wspolling.client_retrofit.WsPollingRetrofitFactory;
+
+import org.eclipse.keyple.example.remote.transport.wspolling.client_retrofit.WsPollingRetrofitFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
 @SuppressWarnings("PMD.AvoidUsingHardCodedIP")
-public class DemoServer {
+public class Demo_Start_Server {
 
 
     public static Properties readConfig(String filename) throws Exception {
@@ -15,7 +16,7 @@ public class DemoServer {
         InputStream input = null;
         try {
 
-            input = DemoServer.class.getClassLoader().getResourceAsStream(filename);
+            input = Demo_Start_Server.class.getClassLoader().getResourceAsStream(filename);
             if(input==null){
                 System.out.println("Sorry, unable to find " + filename);
                 return null;

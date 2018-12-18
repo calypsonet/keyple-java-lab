@@ -30,14 +30,14 @@ project(':java:example:calypso:remotese').projectDir = file("../../../keyple-jav
 project(':java:example:calypso:remotese').name = "example-remotese"
 
 
-include ':java:example:calypso:common'
-project(':java:example:calypso:common').projectDir = file("../../../keyple-java/java/example/calypso/common")
-project(':java:example:calypso:common').name = "example-calypso-common"
+//include ':java:example:calypso:common'
+//project(':java:example:calypso:common').projectDir = file("../../../keyple-java/java/example/calypso/common")
+//project(':java:example:calypso:common').name = "example-calypso-common"
 
 //
-include ':java:example:calypso:pc'
-project(':java:example:calypso:pc').projectDir = file("../../../keyple-java/java/example/calypso/pc")
-project(':java:example:calypso:pc').name = "example-calypso-pc"
+//include ':java:example:calypso:pc'
+//project(':java:example:calypso:pc').projectDir = file("../../../keyple-java/java/example/calypso/pc")
+//project(':java:example:calypso:pc').name = "example-calypso-pc"
 
 
 include ':java:example:generic:common'
@@ -45,10 +45,10 @@ project(':java:example:generic:common').projectDir = file("../../../keyple-java/
 project(':java:example:generic:common').name = "example-generic-common"
 
 
-include ':java:example:generic:pc'
-project(':java:example:generic:pc').projectDir = file("../../../keyple-java/java/example/generic/pc")
-project(':java:example:generic:pc').name = "example-generic-pc"
-
-include ':java:component:keyple-plugin:pcsc'
-project(':java:component:keyple-plugin:pcsc').projectDir = file("../../../keyple-java/java/component/keyple-plugin/pcsc")
-project(':java:component:keyple-plugin:pcsc').name = "keyple-plugin-pcsc"
+//include ':java:example:generic:pc'
+//project(':java:example:generic:pc').projectDir = file("../../../keyple-java/java/example/generic/pc")
+//project(':java:example:generic:pc').name = "example-generic-pc"
+//
+//include ':java:component:keyple-plugin:pcsc'
+//project(':java:component:keyple-plugin:pcsc').projectDir = file("../../../keyple-java/java/component/keyple-plugin/pcsc")
+//project(':java:component:keyple-plugin:pcsc').name = "keyple-plugin-pcsc"

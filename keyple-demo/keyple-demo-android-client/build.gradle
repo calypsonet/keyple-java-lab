@@ -96,6 +96,8 @@ dependencies {
     implementation project(path: ':keyple-plugin:keyple-plugin-android-nfc')
     implementation project(path: ':java:component:keyple-plugin:keyple-plugin-remotese')
     implementation project(path: ':java:component:keyple-core')
+    
+    
     implementation (project(path: ':java:example:calypso:example-remotese')){
         exclude group: 'org.slf4j', module: 'slf4j-simple'
     }

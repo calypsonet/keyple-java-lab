@@ -18,7 +18,7 @@ import org.eclipse.keyple.calypso.transaction.CalypsoPo;
 import org.eclipse.keyple.calypso.transaction.PoSelector;
 import org.eclipse.keyple.calypso.transaction.PoTransaction;
 import org.eclipse.keyple.example.calypso.common.postructure.CalypsoClassicInfo;
-import org.eclipse.keyple.example.remote.wspolling.server.WsPServer;
+import org.eclipse.keyple.example.remote.transport.wspolling.server.WsPServer;
 import org.eclipse.keyple.plugin.remotese.pluginse.RemoteSePlugin;
 import org.eclipse.keyple.plugin.remotese.pluginse.VirtualReader;
 import org.eclipse.keyple.plugin.remotese.pluginse.VirtualReaderService;
@@ -113,7 +113,7 @@ public class DemoMaster implements org.eclipse.keyple.util.Observable.Observer {
 
 
         TicketService ticketService = new TicketServiceMock();
-        server.getHttpServer().createContext("ticket", new TicketEndpoint(ticketService));
+        server.getHttpServer().createContext("/ticket", new TicketEndpoint(ticketService));
 
 
     }
