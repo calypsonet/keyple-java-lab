@@ -1,0 +1,26 @@
+<configuration scan="true" scanPeriod="30 seconds" debug="true">
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <target>System.out</target>
+        <encoder>
+            <pattern>| [%-5level] [%date{ISO8601}] [%logger] [%thread] [%X{akkaSource}] - %msg %rootException %n
+            </pattern>
+        </encoder>
+        sdfsadf
+    </appender>
+
+    <appender name="KEYPLEPCAPPENDER" class="org.keyple.demo.apppc.utils.StaticOutputStreamAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>TRACE</level>
+        </filter>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <root level="TRACE">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="KEYPLEPCAPPENDER"/>
+    </root>
+
+</configuration>

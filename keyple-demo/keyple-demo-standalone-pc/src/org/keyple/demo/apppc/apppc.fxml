@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.Group?>
+<?import javafx.scene.control.Accordion?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.effect.InnerShadow?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="768.0" prefWidth="1024.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.keyple.demo.apppc.Controller">
+   <children>
+      <Pane prefHeight="88.0" prefWidth="1024.0" style="-fx-background-color: d7f6ff;">
+         <children>
+            <ImageView fitHeight="68.0" fitWidth="200.0" layoutX="199.0" layoutY="10.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../../../../resources/p+r.png" />
+               </image></ImageView>
+            <ImageView fitHeight="68.0" fitWidth="200.0" layoutX="14.0" layoutY="9.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../../../../resources/keyple-park-demo.png" />
+               </image>
+            </ImageView>
+         </children>
+         <effect>
+            <InnerShadow />
+         </effect>
+      </Pane>
+      <TabPane layoutY="88.0" prefHeight="580.0" prefWidth="1024.0" tabClosingPolicy="UNAVAILABLE">
+        <tabs>
+          <Tab style="-fx-background-color: #d7f6ff;" text="Sales">
+            <content>
+              <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="668.0" prefWidth="1024.0" style="-fx-background-color: #d7f6ff;" stylesheets="@../../../../resources/tab.css">
+                     <children>
+                        <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="551.0" prefWidth="1024.0">
+                           <children>
+                              <Accordion fx:id="accMain">
+                                <panes>
+                                  <TitledPane animated="false" prefHeight="622.0" prefWidth="1024.0" text="Initialization">
+                                    <content>
+                                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                             <children>
+                                                <Group layoutX="251.0" layoutY="134.0">
+                                                   <children>
+                                                      <Label text="System initialization..." textFill="#952e2e">
+                                                         <font>
+                                                            <Font name="Open Sans Bold" size="47.0" />
+                                                         </font>
+                                                      </Label>
+                                                      <Label fx:id="lblConnectReaders" layoutX="46.0" layoutY="83.0" text="Please connect the readers" textFill="#952e2e">
+                                                         <font>
+                                                            <Font name="Open Sans" size="34.0" />
+                                                         </font>
+                                                      </Label>
+                                                   </children>
+                                                </Group>
+                                             </children>
+                                          </AnchorPane>
+                                    </content>
+                                  </TitledPane>
+                                  <TitledPane animated="false" prefHeight="610.0" prefWidth="1024.0" text="Sales start">
+                                    <content>
+                                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                             <children>
+                                                <Group layoutX="316.0" layoutY="42.0">
+                                                   <children>
+                                                      <ImageView fitHeight="253.0" fitWidth="390.0" layoutY="84.0" pickOnBounds="true" preserveRatio="true">
+                                                         <image>
+                                                            <Image url="@../../../../resources/contact-less-symbol.png" />
+                                                         </image>
+                                                      </ImageView>
+                                                      <Label layoutX="12.0" text="Tap on reader..." textFill="#52bdd8">
+                                                         <font>
+                                                            <Font name="Open Sans Bold" size="47.0" />
+                                                         </font>
+                                                      </Label>
+                                                   </children>
+                                                </Group>
+                                             </children>
+                                          </AnchorPane>
+                                    </content>
+                                  </TitledPane>
+                                    <TitledPane animated="false" layoutX="10.0" layoutY="35.0" prefHeight="689.0" prefWidth="1024.0" text="Cart">
+                                       <content>
+                                          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                             <children>
+                                                <Label layoutX="37.0" layoutY="34.0" text="Last transaction:" />
+                                                <Label fx:id="lblLastTransaction" layoutX="149.0" layoutY="34.0" text="Last transaction">
+                                                   <font>
+                                                      <Font name="Open Sans Bold" size="12.0" />
+                                                   </font>
+                                                </Label>
+                                             </children></AnchorPane>
+                                       </content>
+                                    </TitledPane>
+                                    <TitledPane animated="false" layoutX="10.0" layoutY="60.0" text="Payment">
+                                       <content>
+                                          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+                                       </content>
+                                    </TitledPane>
+                                    <TitledPane animated="false" layoutX="10.0" layoutY="266.0" prefHeight="641.0" prefWidth="1024.0" text="Load title">
+                                       <content>
+                                          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+                                       </content>
+                                    </TitledPane>
+                                    <TitledPane animated="false" layoutX="10.0" layoutY="291.0" text="Sale receipt">
+                                       <content>
+                                          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="616.0" prefWidth="1022.0" />
+                                       </content>
+                                    </TitledPane>
+                                </panes>
+                              </Accordion>
+                           </children>
+                        </VBox>
+                     </children></AnchorPane>
+            </content>
+          </Tab>
+          <Tab style="-fx-background-color: #f1fcff;" text="Settings">
+            <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" style="-fx-background-color: #d7f6ff;">
+                     <children>
+                        <Label layoutX="14.0" layoutY="14.0" text="PO reader name filter" />
+                        <Label layoutX="300.0" layoutY="14.0" text="SAM reader name filter" />
+                        <TextField fx:id="txtPoReaderFilter" layoutX="138.0" layoutY="10.0" />
+                        <TextField fx:id="txtSamReaderFilter" layoutX="438.0" layoutY="10.0" />
+                     </children>
+                  </AnchorPane>
+            </content>
+          </Tab>
+            <Tab text="Logs">
+              <content>
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" style="-fx-background-color: #d7f6ff;">
+                     <children>
+                        <TextArea fx:id="taLogs" editable="false" layoutX="12.0" layoutY="51.0" prefHeight="449.0" prefWidth="1000.0">
+                           <font>
+                              <Font name="Courier New" size="12.0" />
+                           </font>
+                        </TextArea>
+                        <Label layoutX="14.0" layoutY="34.0" text="Log:" />
+                        <Button fx:id="btnClearTaLogs" layoutX="14.0" layoutY="512.0" mnemonicParsing="false" onMouseClicked="#onClearLogsBtnClicked" text="Clear" />
+                     </children>
+                  </AnchorPane>
+              </content>
+            </Tab>
+        </tabs>
+      </TabPane>
+      <Pane layoutY="668.0" prefHeight="100.0" prefWidth="1024.0" style="-fx-background-color: #dfdfe3;">
+         <children>
+            <Button fx:id="btnQuit" layoutX="971.0" layoutY="61.0" mnemonicParsing="false" onMouseClicked="#onQuitBtnClicked" text="Quit" />
+            <ImageView fitHeight="80.0" fitWidth="250.0" layoutY="14.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../../../../resources/logo-keyple-cameleon.png" />
+               </image>
+            </ImageView>
+            <ImageView fitHeight="80.0" fitWidth="200.0" layoutX="741.0" layoutY="11.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../../../../resources/logo-cna.png" />
+               </image>
+            </ImageView>
+            <Label layoutX="306.0" layoutY="42.0" text="Portable Object reader:" />
+            <Label fx:id="lblPOreader" layoutX="436.0" layoutY="42.0" text="lblPOreader">
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font></Label>
+            <Label layoutX="264.0" layoutY="65.0" text="Security Access Module reader:" />
+            <Label fx:id="lblSAMreader" layoutX="436.0" layoutY="65.0" text="lblSAMreader">
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font></Label>
+            <Button fx:id="btnRestart" layoutX="959.0" layoutY="30.0" mnemonicParsing="false" onMouseClicked="#onRestartBtnClicked" text="Restart" />
+         </children>
+      </Pane>
+   </children>
+   <effect>
+      <InnerShadow color="#52c4d3" />
+   </effect>
+</Pane>
