@@ -1,8 +1,18 @@
 package org.keyple.demo.apppc;
 
+import ch.qos.logback.classic.LoggerContext;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
+import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.MouseEvent;
 import org.eclipse.keyple.calypso.command.po.parser.ReadDataStructure;
 import org.eclipse.keyple.calypso.command.po.parser.ReadRecordsRespPars;
@@ -35,12 +45,14 @@ import org.eclipse.keyple.transaction.SeSelector;
 import org.eclipse.keyple.util.ByteArrayUtils;
 import org.keyple.demo.apppc.calypso.CalypsoInfo;
 import org.keyple.demo.apppc.utils.StaticOutputStreamAppender;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
 
 import java.io.OutputStream;
 import java.net.URL;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
@@ -55,15 +67,25 @@ public class Controller implements Initializable {
     private static final int PANE_PAYMENT = 3;
     private static final int PANE_LOAD_TITLE = 4;
     private static final int PANE_SALES_RECEIPT = 5;
+    public Label lblPo;
+    public Label lblError;
+    public ComboBox comboLogLevel;
+    public ComboBox comboWorkMode;
+    public Label lblHolderName;
     private MatchingSe mifareClassic;
     private ReadRecordsRespPars readCounterParser;
+    private String choiceStr[] = {"+1 T", "+10 T", "ST 1M"};
 
     /* application states */
     private enum AppState {
-        UNSPECIFIED, WAIT_SYSTEM_READY, WAIT_CARD_SALES_START, FILL_CART, PAYMENT, WAIT_CARD_LOAD_TITLE, LOAD_TITLE, SALES_RECEIPT, COMMUNICATION_ERROR, INVALID_PO
+        UNSPECIFIED, WAIT_SYSTEM_READY, WAIT_CARD_SALES_START, FILL_CART, PAYMENT, WAIT_CARD_LOAD_TITLE, LOAD_TITLE,
+        SALES_RECEIPT, COMMUNICATION_ERROR, INVALID_PO
     }
 
-    final Logger logger = LoggerFactory.getLogger(Controller.class);
+    ObservableList<String> logLevelList = FXCollections.observableArrayList("TRACE", "DEBUG", "INFO", "ERROR");
+    ObservableList<String> workModeList = FXCollections.observableArrayList("DEMO", "PROFILE1", "PROFILE2", "PROFILE2");
+
+    final Logger logger = (Logger) LoggerFactory.getLogger(Controller.class);
     public Label lblLastTransaction;
     public Label lblConnectReaders;
     public Button btnClearTaLogs;
@@ -81,7 +103,10 @@ public class Controller implements Initializable {
     AppState currentAppState;
     private SeSelection seSelection;
     private ReadRecordsRespPars readEventLogParser;
+    private ReadRecordsRespPars readEnvironmentHolderParser;
     private CalypsoPo calypsoPo;
+    private byte[] currentPoSN;
+    private int choice = 0;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -102,8 +127,27 @@ public class Controller implements Initializable {
             pref.put(PREF_SAM_READER_FILTER, newValue);
         });
 
+        /* init log level selector */
+        comboLogLevel.setItems(logLevelList);
+        comboLogLevel.valueProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newLogLevel) {
+                logger.info("Log level changed to {}", newLogLevel);
+//                logger.setLevel(Level.toLevel(newLogLevel));
+                LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+                Logger rootLogger = loggerContext.getLogger("org");
+                rootLogger.setLevel(Level.toLevel(newLogLevel));
+            }
+        });
+        comboLogLevel.setValue("INFO");
+
+        /* init work mode */
+        comboWorkMode.setItems(workModeList);
+        comboWorkMode.setValue("DEMO");
+
         /* hide "please connect the readers" */
         lblConnectReaders.setVisible(false);
+        lblError.setText("");
 
         setPoReaderName(STR_NOT_CONNECTED);
         setSamReaderName(STR_NOT_CONNECTED);
@@ -154,6 +198,34 @@ public class Controller implements Initializable {
         System.exit(0);
     }
 
+    public void onChoice1BtnClicked(MouseEvent mouseEvent) {
+        if(currentAppState == AppState.FILL_CART) {
+            handleAppEvents(AppState.PAYMENT, null);
+            choice = 0;
+        }
+    }
+
+    public void onChoice2BtnClicked(MouseEvent contextMenuEvent) {
+        if(currentAppState == AppState.FILL_CART) {
+            handleAppEvents(AppState.PAYMENT, null);
+            choice = 1;
+        }
+    }
+
+    public void onChoice3BtnClicked(MouseEvent contextMenuEvent) {
+        if(currentAppState == AppState.FILL_CART) {
+            handleAppEvents(AppState.PAYMENT, null);
+            choice = 2;
+        }
+    }
+
+    public void onValidatePaymentImgClicked(MouseEvent mouseEvent) {
+        if(currentAppState == AppState.PAYMENT) {
+            handleAppEvents(AppState.LOAD_TITLE, null);
+            load(choice);
+        }
+    }
+
     private void setPoReaderName(String name) {
         Platform.runLater(new Runnable() {
             @Override
@@ -189,8 +261,23 @@ public class Controller implements Initializable {
         });
     }
 
+    private void setLabel(Label label, String text) {
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                label.setText(text);
+            }
+        });
+    }
+
     private void handleAppEvents(AppState appState, ReaderEvent readerEvent) {
-        logger.info("Current state = {}, wanted new state = {}, event = {}", currentAppState, appState, readerEvent == null ? "null" : readerEvent.getEventType());
+        logger.info("Current state = {}, wanted new state = {}, event = {}", currentAppState, appState,
+                readerEvent == null ? "null" : readerEvent.getEventType());
+        if (readerEvent != null && readerEvent.getEventType().equals(ReaderEvent.EventType.SE_INSERTED)) {
+            if (!seSelection.processDefaultSelection(readerEvent.getDefaultSelectionResponse())) {
+                logger.error("PO Not selected");
+            }
+        }
         switch (appState) {
             case WAIT_SYSTEM_READY:
                 activatePane(PANE_WAIT_SYSTEM_READY);
@@ -201,17 +288,61 @@ public class Controller implements Initializable {
                     activatePane(PANE_WAIT_CARD_SALES_START);
                     currentAppState = AppState.WAIT_CARD_SALES_START;
                 }
-                if (readerEvent != null) {
-                    if(analyzePoProfile(readerEvent))
-                    {
-                        activatePane(PANE_FILL_CART);
-                        currentAppState = AppState.FILL_CART;
+                if (readerEvent != null && readerEvent.getEventType().equals(ReaderEvent.EventType.SE_INSERTED)) {
+                    if (comboWorkMode.getValue().equals("DEMO")) {
+                        if (analyzePoProfile()) {
+                            activatePane(PANE_FILL_CART);
+                            currentAppState = AppState.FILL_CART;
+                        }
+                    } else {
+                        if (personalize(comboWorkMode.getValue().toString())) {
+                            setLabel(lblError, "The PO has been personalized!");
+                            Timer timer = new Timer();
+                            TimerTask task = new TimerTask() {
+                                public void run() {
+                                    handleAppEvents(AppState.WAIT_CARD_SALES_START, null);
+                                    setLabel(lblError, "");
+                                }
+                            };
+                            timer.schedule(task, 5000L);
+                            activatePane(PANE_WAIT_CARD_SALES_START);
+                            currentAppState = AppState.WAIT_CARD_SALES_START;
+                        } else {
+                            setLabel(lblError, "The personalization failed!");
+                            Timer timer = new Timer();
+                            TimerTask task = new TimerTask() {
+                                public void run() {
+                                    handleAppEvents(AppState.WAIT_CARD_SALES_START, null);
+                                    setLabel(lblError, "");
+                                }
+                            };
+                            timer.schedule(task, 5000L);
+                        }
+                        Platform.runLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                comboWorkMode.setValue("DEMO");
+                            }
+                        });
                     }
                 }
                 break;
             case FILL_CART:
-//                activatePane(PANE_FILL_CART);
-//                currentAppState = appState;
+                if (readerEvent != null && readerEvent.getEventType() == ReaderEvent.EventType.SE_INSERTED) {
+                    if (Arrays.equals(calypsoPo.getApplicationSerialNumber(), currentPoSN)) {
+                        setLabel(lblPo, "S/N " + ByteArrayUtils.toHex(currentPoSN) + ", " + calypsoPo.getRevision());
+                    } else {
+                        setLabel(lblError, "The PO has been switched!");
+                        Timer timer = new Timer();
+                        TimerTask task = new TimerTask() {
+                            public void run() {
+                                handleAppEvents(AppState.WAIT_CARD_SALES_START, null);
+                                setLabel(lblError, "");
+                            }
+                        };
+                        timer.schedule(task, 5000L);
+                    }
+                }
                 break;
             case PAYMENT:
                 activatePane(PANE_PAYMENT);
@@ -222,6 +353,7 @@ public class Controller implements Initializable {
                 currentAppState = appState;
                 break;
             case LOAD_TITLE:
+                activatePane(PANE_LOAD_TITLE);
                 currentAppState = appState;
                 break;
             case SALES_RECEIPT:
@@ -235,62 +367,118 @@ public class Controller implements Initializable {
                 currentAppState = appState;
                 break;
         }
+        if (readerEvent != null) {
+            if (!readerEvent.getEventType().equals(ReaderEvent.EventType.SE_INSERTED)) {
+                setLabel(lblPo, "-");
+            }
+        }
         logger.info("New state = {}", currentAppState);
     }
 
-    private boolean analyzePoProfile(ReaderEvent readerEvent) {
+    private boolean personalize(String profile) {
+        PoTransaction poTransaction = new PoTransaction(poReader, calypsoPo,
+                samReader, CalypsoInfo.getSamSettings());
+
+        boolean poProcessStatus = false;
+        try {
+            poProcessStatus = poTransaction.processOpening(
+                    PoTransaction.ModificationMode.ATOMIC,
+                    PoTransaction.SessionAccessLevel.SESSION_LVL_PERSO, (byte) 0, (byte) 0);
+        } catch (KeypleReaderException e) {
+            e.printStackTrace();
+        }
+
+        if("PROFILE1".equals(profile)) {
+            poTransaction.prepareUpdateRecordCmd(CalypsoInfo.SFI_EnvironmentAndHolder, CalypsoInfo.RECORD_NUMBER_1,
+                    "John Smith".getBytes(), "HolderName: John Smith");
+        } else {
+            poTransaction.prepareUpdateRecordCmd(CalypsoInfo.SFI_EnvironmentAndHolder, CalypsoInfo.RECORD_NUMBER_1,
+                    "Harry Potter".getBytes(), "HolderName: Harry Potter");
+        }
+
+        poTransaction.prepareUpdateRecordCmd(CalypsoInfo.SFI_EventLog, CalypsoInfo.RECORD_NUMBER_1,
+                ByteArrayUtils.fromHex("000000000000000000000000000000000000000000000000000000"),
+                "Event: blank");
+
+//        poTransaction.prepareUpdateRecordCmd(CalypsoInfo.SFI_Counter, CalypsoInfo.RECORD_NUMBER_1, ByteArrayUtils
+// .fromHex("0003E8"),
+//                "Counter: 1000");
+
+        try {
+            poProcessStatus = poTransaction.processClosing(TransmissionMode.CONTACTLESS,
+                    ChannelState.CLOSE_AFTER);
+        } catch (KeypleReaderException e) {
+            e.printStackTrace();
+        }
+        calypsoPo.reset();
+
+        return poProcessStatus;
+    }
+
+    private boolean load(int choice) {
+        PoTransaction poTransaction = new PoTransaction(poReader, calypsoPo,
+                samReader, CalypsoInfo.getSamSettings());
+
+        boolean poProcessStatus = false;
+        try {
+            poProcessStatus = poTransaction.processOpening(
+                    PoTransaction.ModificationMode.ATOMIC,
+                    PoTransaction.SessionAccessLevel.SESSION_LVL_DEBIT, (byte) 0, (byte) 0);
+        } catch (KeypleReaderException e) {
+            e.printStackTrace();
+        }
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String dateTime = LocalDateTime.now().format(formatter);
+
+        String event = choiceStr[choice] + "|" + dateTime;
+
+        poTransaction.prepareAppendRecordCmd(CalypsoInfo.SFI_EventLog, event.getBytes(),"Event: " + event);
+
+        try {
+            poProcessStatus = poTransaction.processClosing(TransmissionMode.CONTACTLESS,
+                    ChannelState.CLOSE_AFTER);
+        } catch (KeypleReaderException e) {
+            e.printStackTrace();
+        }
+        calypsoPo.reset();
+        return true;
+    }
+
+    private boolean analyzePoProfile() {
         boolean status = false;
-        switch (readerEvent.getEventType()) {
-            case SE_INSERTED:
-                if (seSelection.processDefaultSelection(readerEvent.getDefaultSelectionResponse())) {
-                    if(calypsoPo.isSelected()) {
-                        String log = new String(readEventLogParser.getRecords().get((int)CalypsoInfo.RECORD_NUMBER_1));
-                        logger.info("Last transaction: {}", log);
+        if (calypsoPo.isSelected()) {
+            currentPoSN = calypsoPo.getApplicationSerialNumber();
+            setLabel(lblPo, "S/N " + ByteArrayUtils.toHex(currentPoSN) + ", " + calypsoPo.getRevision());
 
-                        Platform.runLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                lblLastTransaction.setText(log);
-                            }
-                        });
-
-                        PoTransaction poTransaction = new PoTransaction(poReader, calypsoPo,
-                                samReader, CalypsoInfo.getSamSettings());
-
-                        boolean poProcessStatus = false;
-                        try {
-                            poProcessStatus = poTransaction.processOpening(
-                                    PoTransaction.ModificationMode.ATOMIC,
-                                    PoTransaction.SessionAccessLevel.SESSION_LVL_DEBIT, (byte) 0, (byte) 0);
-                        } catch (KeypleReaderException e) {
-                            e.printStackTrace();
-                        }
-
-                        String dateTime = LocalDateTime.now().toString();
-
-                        poTransaction.prepareUpdateRecordCmd(CalypsoInfo.SFI_EventLog, CalypsoInfo.RECORD_NUMBER_1, dateTime.getBytes(),
-                                "Event: " + dateTime);
-
-                        try {
-                            poProcessStatus = poTransaction.processClosing(TransmissionMode.CONTACTLESS,
-                                    ChannelState.CLOSE_AFTER);
-                        } catch (KeypleReaderException e) {
-                            e.printStackTrace();
-                        }
-                        status = true;
-                    }else {
-                        if(mifareClassic.getSelectionSeResponse().getSelectionStatus().hasMatched())
-                        {
-                        }
-                    }
+            SortedMap<Integer, byte[]> records = readEventLogParser.getRecords();
+            String log = "";
+            for(int i=0; i<records.size(); i++) {
+                String rec = new String(records.get(i+1));
+                log += "[" + i + "] " + rec;
+                if(i<(records.size()-1)) {
+                    log += " ;     ";
                 }
-                break;
-            case SE_MATCHED:
-                break;
-            case SE_REMOVAL:
-                break;
-            case IO_ERROR:
-                break;
+            }
+
+            logger.info("Last transaction: {}", log);
+
+            setLabel(lblLastTransaction, log);
+
+            String holderName =
+                    new String(readEnvironmentHolderParser.getRecords().get((int) CalypsoInfo.RECORD_NUMBER_1));
+
+            logger.info("Holder name: {}", holderName);
+
+            setLabel(lblHolderName, holderName);
+
+            /* TODO https://github.com/calypsonet/keyple-java/issues/453 */
+            status = true;
+        } else {
+            if (mifareClassic.getSelectionSeResponse() != null
+                    && mifareClassic.getSelectionSeResponse().getSelectionStatus() != null
+                    && mifareClassic.getSelectionSeResponse().getSelectionStatus().hasMatched()) {
+            }
         }
         return status;
     }
@@ -328,6 +516,7 @@ public class Controller implements Initializable {
                 setPoReaderName(STR_NOT_CONNECTED);
                 ((ObservableReader) poReader).removeObserver(poReaderObserver);
                 handleAppEvents(AppState.WAIT_SYSTEM_READY, null);
+                poReader = null;
             }
         } else {
             throw new IllegalStateException("reader is null");
@@ -359,6 +548,7 @@ public class Controller implements Initializable {
                 setSamReaderName(STR_NOT_CONNECTED);
                 ((ObservableReader) samReader).removeObserver(samReaderObserver);
                 handleAppEvents(AppState.WAIT_SYSTEM_READY, null);
+                samReader = null;
             }
         } else {
             throw new IllegalStateException("reader is null");
@@ -437,9 +627,13 @@ public class Controller implements Initializable {
                 SeSelector.SelectMode.FIRST, ChannelState.KEEP_OPEN,
                 ContactlessProtocols.PROTOCOL_ISO14443_4, "AID: " + CalypsoInfo.AID);
 
-        /* Prepare reading of the environment file. */
-        readEventLogParser = calypsoPoSelector.prepareReadRecordsCmd(CalypsoInfo.SFI_EventLog,
+        readEnvironmentHolderParser = calypsoPoSelector.prepareReadRecordsCmd(CalypsoInfo.SFI_EnvironmentAndHolder,
                 ReadDataStructure.SINGLE_RECORD_DATA, CalypsoInfo.RECORD_NUMBER_1,
+                String.format("EnvironmentHolder (SFI=%02X))",
+                        CalypsoInfo.SFI_EnvironmentAndHolder));
+
+        readEventLogParser = calypsoPoSelector.prepareReadRecordsCmd(CalypsoInfo.SFI_EventLog,
+                ReadDataStructure.MULTIPLE_RECORD_DATA, CalypsoInfo.RECORD_NUMBER_1,
                 String.format("EventLog (SFI=%02X))",
                         CalypsoInfo.SFI_EventLog));
 
@@ -478,14 +672,21 @@ public class Controller implements Initializable {
             this.textArea = textArea;
         }
 
+        StringBuilder stb = new StringBuilder();
+
         @Override
         public void write(int b) {
-            Platform.runLater(new Runnable() {
-                @Override
-                public void run() {
-                    textArea.appendText(String.valueOf((char) b));
-                }
-            });
+            stb.append((char) b);
+
+            if (b == '\n') {
+                Platform.runLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        textArea.appendText(stb.toString());
+                        stb.setLength(0);
+                    }
+                });
+            }
         }
     }
 
@@ -560,7 +761,7 @@ public class Controller implements Initializable {
         @Override
         public void update(ReaderEvent readerEvent) {
             logger.info("SAM Reader event = {}", readerEvent.getEventType());
-            if(readerEvent.getEventType() == ReaderEvent.EventType.SE_INSERTED) {
+            if (readerEvent.getEventType() == ReaderEvent.EventType.SE_INSERTED) {
                 /* SAM open logical channel */
                 checkSamAndOpenChannel(samReader);
             }

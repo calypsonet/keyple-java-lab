@@ -11,10 +11,10 @@
 
     <appender name="KEYPLEPCAPPENDER" class="org.keyple.demo.apppc.utils.StaticOutputStreamAppender">
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-            <level>TRACE</level>
+            <level>ALL</level>
         </filter>
         <encoder>
-            <pattern>%d{HH:mm:ss.SSS} - %msg%n</pattern>
+            <pattern>[%-5level] %d{HH:mm:ss.SSS} - %msg%n</pattern>
         </encoder>
     </appender>
 

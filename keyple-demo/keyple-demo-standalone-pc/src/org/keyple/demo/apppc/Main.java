@@ -37,8 +37,10 @@ public class Main extends Application {
             }
         });
 
-        primaryStage.setTitle("Hello World");
-        primaryStage.setScene(new Scene(root, 1024, 768));
+        primaryStage.setTitle("Keyple demo");
+        Scene scene = new Scene(root, 1024, 768);
+        scene.getStylesheets().add(getClass().getResource("style.css").toExternalForm());
+        primaryStage.setScene(scene);
         primaryStage.show();
     }
 

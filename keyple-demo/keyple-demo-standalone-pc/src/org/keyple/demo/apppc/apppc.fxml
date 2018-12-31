@@ -3,7 +3,9 @@
 <?import javafx.scene.Group?>
 <?import javafx.scene.control.Accordion?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TextArea?>
@@ -21,15 +23,20 @@
    <children>
       <Pane prefHeight="88.0" prefWidth="1024.0" style="-fx-background-color: d7f6ff;">
          <children>
-            <ImageView fitHeight="68.0" fitWidth="200.0" layoutX="199.0" layoutY="10.0" pickOnBounds="true" preserveRatio="true">
+            <ImageView fitHeight="68.0" fitWidth="200.0" layoutX="835.0" layoutY="10.0" pickOnBounds="true" preserveRatio="true">
                <image>
                   <Image url="@../../../../resources/p+r.png" />
                </image></ImageView>
-            <ImageView fitHeight="68.0" fitWidth="200.0" layoutX="14.0" layoutY="9.0" pickOnBounds="true" preserveRatio="true">
-               <image>
-                  <Image url="@../../../../resources/keyple-park-demo.png" />
-               </image>
-            </ImageView>
+            <Label layoutX="21.0" layoutY="14.0" text="Keyple Park" textFill="#3b95b0">
+               <font>
+                  <Font name="Open Sans Bold" size="22.0" />
+               </font>
+            </Label>
+            <Label layoutX="21.0" layoutY="44.0" text="Sales Application Demo" textFill="#3b95b0">
+               <font>
+                  <Font name="Open Sans Bold" size="22.0" />
+               </font>
+            </Label>
          </children>
          <effect>
             <InnerShadow />
@@ -39,7 +46,7 @@
         <tabs>
           <Tab style="-fx-background-color: #d7f6ff;" text="Sales">
             <content>
-              <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="668.0" prefWidth="1024.0" style="-fx-background-color: #d7f6ff;" stylesheets="@../../../../resources/tab.css">
+              <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="668.0" prefWidth="1024.0" style="-fx-background-color: #d7f6ff;" stylesheets="@style.css">
                      <children>
                         <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="551.0" prefWidth="1024.0">
                            <children>
@@ -93,18 +100,55 @@
                                        <content>
                                           <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                                              <children>
-                                                <Label layoutX="37.0" layoutY="34.0" text="Last transaction:" />
-                                                <Label fx:id="lblLastTransaction" layoutX="149.0" layoutY="34.0" text="Last transaction">
+                                                <Label layoutX="37.0" layoutY="52.0" text="Last transactions:" />
+                                                <Label fx:id="lblLastTransaction" layoutX="149.0" layoutY="52.0" text="Last transaction">
                                                    <font>
-                                                      <Font name="Open Sans Bold" size="12.0" />
+                                                      <Font name="System Bold" size="12.0" />
+                                                   </font>
+                                                </Label>
+                                                <Separator layoutX="32.0" layoutY="76.0" prefHeight="0.0" prefWidth="958.0" />
+                                                <Label layoutX="37.0" layoutY="6.0" text="Card information">
+                                                   <font>
+                                                      <Font name="System Bold" size="14.0" />
+                                                   </font>
+                                                </Label>
+                                                <Label layoutX="37.0" layoutY="33.0" text="Holder name:" />
+                                                <Label fx:id="lblHolderName" layoutX="149.0" layoutY="33.0" text="Holder name">
+                                                   <font>
+                                                      <Font name="System Bold" size="12.0" />
+                                                   </font>
+                                                </Label>
+                                                <Button fx:id="btnChoice1" layoutX="32.0" layoutY="145.0" mnemonicParsing="false" onMouseClicked="#onChoice1BtnClicked" prefHeight="200.0" prefWidth="200.0" styleClass="cart-button" text="1&#10;&#10;TICKET" textAlignment="CENTER" />
+                                                <Button fx:id="btnChoice2" layoutX="411.0" layoutY="145.0" mnemonicParsing="false" onMouseClicked="#onChoice2BtnClicked" prefHeight="200.0" prefWidth="200.0" styleClass="cart-button" text="10&#10;&#10;TICKETS" textAlignment="CENTER" />
+                                                <Button fx:id="btnChoice3" layoutX="790.0" layoutY="145.0" mnemonicParsing="false" onMouseClicked="#onChoice3BtnClicked" prefHeight="200.0" prefWidth="200.0" styleClass="cart-button" text="SEASON TICKET&#10;&#10;1 MONTH" textAlignment="CENTER" />
+                                                <Label layoutX="32.0" layoutY="102.0" text="Select the product to load" textFill="#384e7a">
+                                                   <font>
+                                                      <Font name="Lucida Sans Demibold" size="18.0" />
                                                    </font>
                                                 </Label>
                                              </children></AnchorPane>
                                        </content>
                                     </TitledPane>
-                                    <TitledPane animated="false" layoutX="10.0" layoutY="60.0" text="Payment">
+                                    <TitledPane animated="false" layoutX="10.0" layoutY="60.0" prefHeight="558.0" prefWidth="1024.0" text="Payment">
                                        <content>
-                                          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+                                          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                             <children>
+                                                <ImageView fx:id="imgValidatePayment" fitHeight="100.0" fitWidth="800.0" layoutX="321.0" layoutY="162.0" onMouseClicked="#onValidatePaymentImgClicked" pickOnBounds="true" preserveRatio="true">
+                                                   <image>
+                                                      <Image url="@../../../../resources/payment.png" />
+                                                   </image>
+                                                </ImageView>
+                                                <Label layoutX="199.0" layoutY="97.0" text="Validate the payment">
+                                                   <font>
+                                                      <Font name="Lucida Sans Demibold" size="32.0" />
+                                                   </font>
+                                                </Label>
+                                                <Label layoutX="610.0" layoutY="97.0" text="amount">
+                                                   <font>
+                                                      <Font name="Lucida Sans Demibold" size="32.0" />
+                                                   </font>
+                                                </Label>
+                                             </children></AnchorPane>
                                        </content>
                                     </TitledPane>
                                     <TitledPane animated="false" layoutX="10.0" layoutY="266.0" prefHeight="641.0" prefWidth="1024.0" text="Load title">
@@ -132,6 +176,8 @@
                         <Label layoutX="300.0" layoutY="14.0" text="SAM reader name filter" />
                         <TextField fx:id="txtPoReaderFilter" layoutX="138.0" layoutY="10.0" />
                         <TextField fx:id="txtSamReaderFilter" layoutX="438.0" layoutY="10.0" />
+                        <ComboBox fx:id="comboWorkMode" layoutX="860.0" layoutY="10.0" prefWidth="150.0" />
+                        <Label layoutX="816.0" layoutY="14.0" text="Mode" />
                      </children>
                   </AnchorPane>
             </content>
@@ -140,13 +186,15 @@
               <content>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" style="-fx-background-color: #d7f6ff;">
                      <children>
-                        <TextArea fx:id="taLogs" editable="false" layoutX="12.0" layoutY="51.0" prefHeight="449.0" prefWidth="1000.0">
+                        <TextArea fx:id="taLogs" editable="false" layoutX="12.0" layoutY="27.0" prefHeight="473.0" prefWidth="1000.0">
                            <font>
                               <Font name="Courier New" size="12.0" />
                            </font>
                         </TextArea>
-                        <Label layoutX="14.0" layoutY="34.0" text="Log:" />
-                        <Button fx:id="btnClearTaLogs" layoutX="14.0" layoutY="512.0" mnemonicParsing="false" onMouseClicked="#onClearLogsBtnClicked" text="Clear" />
+                        <Label layoutX="12.0" layoutY="6.0" text="Log:" />
+                        <Button fx:id="btnClearTaLogs" layoutX="171.0" layoutY="512.0" mnemonicParsing="false" onMouseClicked="#onClearLogsBtnClicked" text="Clear" />
+                        <ComboBox fx:id="comboLogLevel" layoutX="73.0" layoutY="512.0" prefHeight="25.0" prefWidth="77.0" />
+                        <Label layoutX="13.0" layoutY="516.0" text="Log level" />
                      </children>
                   </AnchorPane>
               </content>
@@ -166,17 +214,28 @@
                   <Image url="@../../../../resources/logo-cna.png" />
                </image>
             </ImageView>
-            <Label layoutX="306.0" layoutY="42.0" text="Portable Object reader:" />
-            <Label fx:id="lblPOreader" layoutX="436.0" layoutY="42.0" text="lblPOreader">
+            <Label layoutX="304.0" layoutY="10.0" text="Portable Object reader:" />
+            <Label fx:id="lblPOreader" layoutX="434.0" layoutY="10.0" text="lblPOreader">
                <font>
                   <Font name="System Bold" size="12.0" />
                </font></Label>
-            <Label layoutX="264.0" layoutY="65.0" text="Security Access Module reader:" />
-            <Label fx:id="lblSAMreader" layoutX="436.0" layoutY="65.0" text="lblSAMreader">
+            <Label layoutX="262.0" layoutY="33.0" text="Security Access Module reader:" />
+            <Label fx:id="lblSAMreader" layoutX="434.0" layoutY="33.0" text="lblSAMreader">
                <font>
                   <Font name="System Bold" size="12.0" />
                </font></Label>
             <Button fx:id="btnRestart" layoutX="959.0" layoutY="30.0" mnemonicParsing="false" onMouseClicked="#onRestartBtnClicked" text="Restart" />
+            <Label layoutX="340.0" layoutY="53.0" text="Portable Object:" />
+            <Label fx:id="lblPo" layoutX="432.0" layoutY="53.0" text="-">
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font>
+            </Label>
+            <Label fx:id="lblError" layoutX="262.0" layoutY="71.0" text="error" textFill="RED">
+               <font>
+                  <Font name="Open Sans Bold" size="16.0" />
+               </font>
+            </Label>
          </children>
       </Pane>
    </children>
