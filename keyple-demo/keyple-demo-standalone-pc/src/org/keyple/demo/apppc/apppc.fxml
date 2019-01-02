@@ -5,6 +5,7 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressIndicator?>
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
@@ -85,7 +86,7 @@
                                                             <Image url="@../../../../resources/contact-less-symbol.png" />
                                                          </image>
                                                       </ImageView>
-                                                      <Label layoutX="12.0" text="Tap on reader..." textFill="#52bdd8">
+                                                      <Label layoutX="-77.0" text="Put the card on the reader" textFill="#52bdd8">
                                                          <font>
                                                             <Font name="Open Sans Bold" size="47.0" />
                                                          </font>
@@ -100,13 +101,13 @@
                                        <content>
                                           <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                                              <children>
-                                                <Label layoutX="37.0" layoutY="52.0" text="Last transactions:" />
-                                                <Label fx:id="lblLastTransaction" layoutX="149.0" layoutY="52.0" text="Last transaction">
+                                                <Label layoutX="37.0" layoutY="106.0" text="Last transactions:" />
+                                                <Label fx:id="lblLastTransaction" layoutX="149.0" layoutY="106.0" text="Last transaction">
                                                    <font>
                                                       <Font name="System Bold" size="12.0" />
                                                    </font>
                                                 </Label>
-                                                <Separator layoutX="32.0" layoutY="76.0" prefHeight="0.0" prefWidth="958.0" />
+                                                <Separator layoutX="32.0" layoutY="142.0" prefHeight="0.0" prefWidth="958.0" />
                                                 <Label layoutX="37.0" layoutY="6.0" text="Card information">
                                                    <font>
                                                       <Font name="System Bold" size="14.0" />
@@ -118,12 +119,24 @@
                                                       <Font name="System Bold" size="12.0" />
                                                    </font>
                                                 </Label>
-                                                <Button fx:id="btnChoice1" layoutX="32.0" layoutY="145.0" mnemonicParsing="false" onMouseClicked="#onChoice1BtnClicked" prefHeight="200.0" prefWidth="200.0" styleClass="cart-button" text="1&#10;&#10;TICKET" textAlignment="CENTER" />
-                                                <Button fx:id="btnChoice2" layoutX="411.0" layoutY="145.0" mnemonicParsing="false" onMouseClicked="#onChoice2BtnClicked" prefHeight="200.0" prefWidth="200.0" styleClass="cart-button" text="10&#10;&#10;TICKETS" textAlignment="CENTER" />
-                                                <Button fx:id="btnChoice3" layoutX="790.0" layoutY="145.0" mnemonicParsing="false" onMouseClicked="#onChoice3BtnClicked" prefHeight="200.0" prefWidth="200.0" styleClass="cart-button" text="SEASON TICKET&#10;&#10;1 MONTH" textAlignment="CENTER" />
-                                                <Label layoutX="32.0" layoutY="102.0" text="Select the product to load" textFill="#384e7a">
+                                                <Button fx:id="btnChoice1" layoutX="32.0" layoutY="182.0" mnemonicParsing="false" onMouseClicked="#onChoice1BtnClicked" prefHeight="200.0" prefWidth="200.0" styleClass="cart-button" text="1&#10;&#10;TICKET&#10;&#10;€2" textAlignment="CENTER" />
+                                                <Button fx:id="btnChoice2" layoutX="411.0" layoutY="182.0" mnemonicParsing="false" onMouseClicked="#onChoice2BtnClicked" prefHeight="200.0" prefWidth="200.0" styleClass="cart-button" text="10&#10;&#10;TICKETS&#10;&#10;€18" textAlignment="CENTER" />
+                                                <Button fx:id="btnChoice3" layoutX="790.0" layoutY="182.0" mnemonicParsing="false" onMouseClicked="#onChoice3BtnClicked" prefHeight="200.0" prefWidth="200.0" styleClass="cart-button" text="SEASON TICKET&#10;&#10;1 MONTH&#10;&#10;€50" textAlignment="CENTER" />
+                                                <Label layoutX="37.0" layoutY="155.0" text="Select the product to load" textFill="#384e7a">
                                                    <font>
                                                       <Font name="Lucida Sans Demibold" size="18.0" />
+                                                   </font>
+                                                </Label>
+                                                <Label layoutX="37.0" layoutY="50.0" text="Contracts:" />
+                                                <Label fx:id="lblContracts" layoutX="149.0" layoutY="50.0" text="contracts">
+                                                   <font>
+                                                      <Font name="System Bold" size="12.0" />
+                                                   </font>
+                                                </Label>
+                                                <Label layoutX="37.0" layoutY="68.0" text="Counters:" />
+                                                <Label fx:id="lblCounters" layoutX="149.0" layoutY="68.0" text="counters">
+                                                   <font>
+                                                      <Font name="System Bold" size="12.0" />
                                                    </font>
                                                 </Label>
                                              </children></AnchorPane>
@@ -138,14 +151,14 @@
                                                       <Image url="@../../../../resources/payment.png" />
                                                    </image>
                                                 </ImageView>
-                                                <Label layoutX="199.0" layoutY="97.0" text="Validate the payment">
+                                                <Label layoutX="199.0" layoutY="97.0" text="Validate the payment:">
                                                    <font>
                                                       <Font name="Lucida Sans Demibold" size="32.0" />
                                                    </font>
                                                 </Label>
-                                                <Label layoutX="610.0" layoutY="97.0" text="amount">
+                                                <Label fx:id="lblAmount" layoutX="608.0" layoutY="93.0" text="amount">
                                                    <font>
-                                                      <Font name="Lucida Sans Demibold" size="32.0" />
+                                                      <Font name="System Bold" size="32.0" />
                                                    </font>
                                                 </Label>
                                              </children></AnchorPane>
@@ -153,12 +166,34 @@
                                     </TitledPane>
                                     <TitledPane animated="false" layoutX="10.0" layoutY="266.0" prefHeight="641.0" prefWidth="1024.0" text="Load title">
                                        <content>
-                                          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+                                          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                             <children>
+                                                <ProgressIndicator fx:id="piLoadTitle" layoutX="358.0" layoutY="94.0" prefHeight="212.0" prefWidth="306.0" />
+                                                <Label layoutX="450.0" layoutY="38.0" text="Loading titles...." textFill="#3b95b0">
+                                                   <font>
+                                                      <Font size="18.0" />
+                                                   </font>
+                                                </Label>
+                                             </children></AnchorPane>
                                        </content>
                                     </TitledPane>
                                     <TitledPane animated="false" layoutX="10.0" layoutY="291.0" text="Sale receipt">
                                        <content>
-                                          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="616.0" prefWidth="1022.0" />
+                                          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="616.0" prefWidth="1022.0">
+                                             <children>
+                                                <Label layoutX="141.0" layoutY="53.0" text="Receipt">
+                                                   <font>
+                                                      <Font name="System Bold" size="21.0" />
+                                                   </font>
+                                                </Label>
+                                                <Label fx:id="lblSaleItem" layoutX="141.0" layoutY="116.0" text="Item" />
+                                                <Label fx:id="lblSaleDate" layoutX="420.0" layoutY="116.0" text="date" />
+                                                <Label fx:id="lblSaleAmount" layoutX="613.0" layoutY="116.0" text="amount" />
+                                                <Button layoutX="784.0" layoutY="112.0" mnemonicParsing="false" text="Print..." />
+                                                <Button layoutX="400.0" layoutY="288.0" mnemonicParsing="false" onMouseClicked="#onNewSaleBtnClicked" prefHeight="68.0" prefWidth="175.0" styleClass="new-sale-button" text="New sale" />
+                                                <Separator layoutX="141.0" layoutY="102.0" prefHeight="0.0" prefWidth="692.0" />
+                                                <Separator layoutX="141.0" layoutY="146.0" prefHeight="0.0" prefWidth="692.0" />
+                                             </children></AnchorPane>
                                        </content>
                                     </TitledPane>
                                 </panes>
@@ -209,7 +244,7 @@
                   <Image url="@../../../../resources/logo-keyple-cameleon.png" />
                </image>
             </ImageView>
-            <ImageView fitHeight="80.0" fitWidth="200.0" layoutX="741.0" layoutY="11.0" pickOnBounds="true" preserveRatio="true">
+            <ImageView fitHeight="80.0" fitWidth="200.0" layoutX="741.0" layoutY="11.0" onMouseClicked="#onRestartBtnClicked" pickOnBounds="true" preserveRatio="true">
                <image>
                   <Image url="@../../../../resources/logo-cna.png" />
                </image>
@@ -224,14 +259,13 @@
                <font>
                   <Font name="System Bold" size="12.0" />
                </font></Label>
-            <Button fx:id="btnRestart" layoutX="959.0" layoutY="30.0" mnemonicParsing="false" onMouseClicked="#onRestartBtnClicked" text="Restart" />
             <Label layoutX="340.0" layoutY="53.0" text="Portable Object:" />
             <Label fx:id="lblPo" layoutX="432.0" layoutY="53.0" text="-">
                <font>
                   <Font name="System Bold" size="12.0" />
                </font>
             </Label>
-            <Label fx:id="lblError" layoutX="262.0" layoutY="71.0" text="error" textFill="RED">
+            <Label fx:id="lblMessage" layoutX="262.0" layoutY="71.0" text="message" textFill="RED">
                <font>
                   <Font name="Open Sans Bold" size="16.0" />
                </font>

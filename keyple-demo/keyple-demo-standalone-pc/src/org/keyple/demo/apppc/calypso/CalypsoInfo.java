@@ -32,8 +32,8 @@ import java.util.EnumMap;
  * </ul>
  */
 public class CalypsoInfo {
-    /** AID 1TIC.ICA2 */
-    public final static String AID = "315449432e49434131";
+    /** AID 1TIC.ICA* */
+    public final static String AID = "315449432e494341";
     /** Audit-C0 */
     //public final static String AID = "315449432E4943414C54";
     /// ** 1TIC.ICA AID */
