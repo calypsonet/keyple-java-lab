@@ -14,18 +14,13 @@ package org.cna.keyple.demo.httpserver;
 import java.io.IOException;
 import java.util.Arrays;
 
-import javafx.scene.media.VideoTrack;
-import org.cna.keyple.demo.httpserver.ticketingsession.CalypsoInfo;
-import org.cna.keyple.demo.httpserver.ticketingsession.TicketingSession;
-import org.cna.keyple.demo.httpserver.ticketingsession.TicketingSessionManager;
+
 import org.cna.keyple.demo.httpserver.transaction.SaleTransaction;
 import org.cna.keyple.demo.httpserver.transaction.SaleTransactionManager;
-import org.eclipse.keyple.calypso.command.po.parser.ReadDataStructure;
-import org.eclipse.keyple.calypso.command.po.parser.ReadRecordsRespPars;
-import org.eclipse.keyple.calypso.transaction.CalypsoPo;
-import org.eclipse.keyple.calypso.transaction.PoSelector;
-import org.eclipse.keyple.calypso.transaction.PoTransaction;
-import org.eclipse.keyple.example.calypso.common.postructure.CalypsoClassicInfo;
+import org.cna.keyple.demo.httpserver.transaction.TransactionEndpoint;
+import org.cna.keyple.demo.ticketing.CalypsoInfo;
+import org.cna.keyple.demo.ticketing.TicketingSession;
+import org.cna.keyple.demo.ticketing.TicketingSessionManager;
 import org.eclipse.keyple.example.calypso.common.transaction.CalypsoUtilities;
 import org.eclipse.keyple.example.remote.transport.wspolling.server.WsPServer;
 import org.eclipse.keyple.plugin.pcsc.PcscPlugin;
@@ -40,19 +35,15 @@ import org.eclipse.keyple.seproxy.ChannelState;
 import org.eclipse.keyple.seproxy.ReaderPlugin;
 import org.eclipse.keyple.seproxy.SeProxyService;
 import org.eclipse.keyple.seproxy.SeReader;
-import org.eclipse.keyple.seproxy.event.ObservableReader;
 import org.eclipse.keyple.seproxy.event.PluginEvent;
 import org.eclipse.keyple.seproxy.event.ReaderEvent;
 import org.eclipse.keyple.seproxy.exception.KeypleBaseException;
 import org.eclipse.keyple.seproxy.exception.KeyplePluginNotFoundException;
 import org.eclipse.keyple.seproxy.exception.KeypleReaderException;
 import org.eclipse.keyple.seproxy.exception.KeypleReaderNotFoundException;
-import org.eclipse.keyple.seproxy.protocol.ContactlessProtocols;
 import org.eclipse.keyple.seproxy.protocol.Protocol;
-import org.eclipse.keyple.transaction.MatchingSe;
 import org.eclipse.keyple.transaction.SeSelection;
 import org.eclipse.keyple.transaction.SeSelector;
-import org.eclipse.keyple.util.ByteArrayUtils;
 import org.eclipse.keyple.util.Observable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -118,7 +109,7 @@ public class DemoMaster implements  org.eclipse.keyple.util.Observable.Observer 
         ticketingSessionManager = new TicketingSessionManager(samReader);
 
         /* init sale transaction manager */
-        server.getHttpServer().createContext("/transaction", new TransactionEndpoint(new SaleTransactionManager()));
+        server.getHttpServer().createContext("/saleTransaction", new TransactionEndpoint(new SaleTransactionManager()));
 
 
     }

@@ -1,10 +1,9 @@
-package org.cna.keyple.demo.httpserver;
+package org.cna.keyple.demo.httpserver.transaction;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import org.cna.keyple.demo.httpserver.transaction.SaleTransactionManager;
 import org.eclipse.keyple.plugin.remotese.transport.json.JsonParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -22,7 +22,7 @@ public class TransactionEndpoint implements HttpHandler {
 
     SaleTransactionManager saleTransactionManager;
 
-    TransactionEndpoint(SaleTransactionManager saleTransactionManager){
+    public TransactionEndpoint(SaleTransactionManager saleTransactionManager){
         this.saleTransactionManager = saleTransactionManager ;
     }
 
@@ -36,38 +36,31 @@ public class TransactionEndpoint implements HttpHandler {
         Map<String, String> params = queryToMap(t.getRequestURI().getQuery());
         String sessionId = params.get("sessionId");
 
-        if (sessionId == null) {
-            String responseBody = "{}";
-            Integer responseCode = 401;
-            t.sendResponseHeaders(responseCode, responseBody.length());
+
+        if (requestMethod.equals("PUT")) {
+            URI uri = t.getRequestURI();
+            String responseBody = "Path: " + uri.getPath() + "\n";
+            Integer responseCode = 200;
+
             t.getResponseHeaders().add("Content-Type", "application/json");
+            t.sendResponseHeaders(responseCode, responseBody.length());
             OutputStream os = t.getResponseBody();
+            os.write(responseBody.getBytes());
             os.close();
         }
 
-        if (requestMethod.equals("POST")) {
-            String body = parseBodyToString(t.getRequestBody());// .. parse the
+        if (requestMethod.equals("GET")) {
+            String responseBody = JsonParser.getGson().toJson(saleTransactionManager.findAll());
 
-            JsonObject obj = JsonParser.getGson().fromJson(body, JsonObject.class);
-
-            JsonElement ticketNumberToLoad = obj.get("ticketNumber");
-
-            Integer availableTicket;
-
-
-            JsonObject resp = new JsonObject();
-
-            String responseBody = resp.getAsString();
             Integer responseCode = 200;
             t.getResponseHeaders().add("Content-Type", "application/json");
             t.sendResponseHeaders(responseCode, responseBody.length());
             OutputStream os = t.getResponseBody();
             os.write(responseBody.getBytes());
             os.close();
-            logger.debug("Outcoming Response Code {} ", responseCode);
-            logger.debug("Outcoming Response Body {} ", responseBody);
-
         }
+
+
     }
 
     private String parseBodyToString(InputStream is) {

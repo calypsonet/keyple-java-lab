@@ -9,7 +9,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-package org.cna.keyple.demo.httpserver.ticketingsession;
+package org.cna.keyple.demo.ticketing;
 
 
 import org.eclipse.keyple.calypso.transaction.PoTransaction;

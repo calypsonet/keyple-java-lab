@@ -39,7 +39,7 @@ public class Demo_Start_Server {
 
     public static void main(String[] args) throws Exception {
         String nodeId = "androidClient1";
-        String filename = "DemoAndroidMasterServer.properties";
+        String filename = "MasterServer.properties";
 
         WsPollingRetrofitFactory transportFactory = new WsPollingRetrofitFactory(readConfig(filename), nodeId);
 

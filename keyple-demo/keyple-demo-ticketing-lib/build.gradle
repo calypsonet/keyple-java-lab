@@ -1,0 +1,42 @@
+plugins {
+    id 'maven-publish'
+}
+
+project.group 'org.eclipse.keyple'
+project.version '0.11.0-SNAPSHOT'
+
+apply plugin: 'java'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'Keyple Demo Ticketing Lib',
+                'Implementation-Version': project.version
+    }
+}
+
+
+dependencies {
+
+    implementation project(path:':java:component:keyple-calypso')
+
+    //implementation group: 'org.eclipse.keyple', name: 'keyple-core', version: '1.+'
+    implementation project(path:':java:component:keyple-core')
+
+    //add slf4j simple logger implementation
+    runtime group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.25'
+    
+    // https://mvnrepository.com/artifact/junit/junit
+    testImplementation group: 'junit', name: 'junit', version: '4.12'
+
+    // https://mvnrepository.com/artifact/org.mockito/mockito-core
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: '2.13.0'
+    
+}
+
+test {
+    exclude 'org/eclipse/**'
+}

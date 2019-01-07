@@ -15,6 +15,9 @@ println '** ' + rootProject.name + ' initialization phase.'
 include 'keyple-demo:keyple-demo-master-server'
 project(':keyple-demo:keyple-demo-master-server').name = "keyple-demo-master-server"
 
+include 'keyple-demo:keyple-demo-ticketing-lib'
+project(':keyple-demo:keyple-demo-ticketing-lib').name = "keyple-demo-ticketing-lib"
+
 
 /* Keyple java */
 
@@ -65,3 +68,6 @@ project(':java:example:calypso:pc').name = "example-calypso-pc"
 include ':java:example:calypso:remotese'
 project(':java:example:calypso:remotese').projectDir = file("../keyple-java/java/example/calypso/remotese")
 project(':java:example:calypso:remotese').name = "example-remotese"
+include 'keyple-demo:server-jetty'
+findProject(':keyple-demo:server-jetty')?.name = 'server-jetty'
+

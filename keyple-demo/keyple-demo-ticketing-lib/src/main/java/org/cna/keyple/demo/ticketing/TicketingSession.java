@@ -1,4 +1,4 @@
-package org.cna.keyple.demo.httpserver.ticketingsession;
+package org.cna.keyple.demo.ticketing;
 
 import org.eclipse.keyple.calypso.command.po.parser.ReadDataStructure;
 import org.eclipse.keyple.calypso.command.po.parser.ReadRecordsRespPars;

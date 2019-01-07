@@ -1,4 +1,4 @@
-package org.cna.keyple.demo.httpserver.ticketingsession;
+package org.cna.keyple.demo.ticketing;
 
 import java.util.SortedMap;
 

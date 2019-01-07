@@ -1,4 +1,4 @@
-package org.cna.keyple.demo.httpserver.ticketingsession;
+package org.cna.keyple.demo.ticketing;
 
 import org.eclipse.keyple.seproxy.SeReader;
 import org.eclipse.keyple.seproxy.exception.KeypleReaderNotFoundException;
