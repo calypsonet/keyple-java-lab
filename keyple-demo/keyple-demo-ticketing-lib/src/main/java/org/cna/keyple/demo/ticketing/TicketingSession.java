@@ -133,14 +133,7 @@ public class TicketingSession {
         if(bankingCard == null) {
             logger.error("bankingCard is null.");
         }
-        try {
-            //calypsoPo.reset();
-            //mifareClassic.reset();
-            //bankingCard.reset();
 
-        } catch (Exception e) {
-            logger.error("Exception: " + e.getMessage());
-        }
 
         logger.info("selectionResponse = {}", selectionResponse.getSelectionSeResponseSet());
 
