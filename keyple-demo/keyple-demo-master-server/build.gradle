@@ -7,8 +7,8 @@ project.version '0.11.0-SNAPSHOT'
 
 apply plugin: 'java'
 
-sourceCompatibility = 1.6
-targetCompatibility = 1.6
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 
 jar {
@@ -29,6 +29,8 @@ dependencies {
     //implementation group: 'org.eclipse.keyple', name: 'keyple-plugin-stub', version: '1.+'
     implementation project(path:':java:component:keyple-plugin:keyple-plugin-stub')
 
+    implementation project(path:':java:component:keyple-plugin:keyple-plugin-pcsc')
+
     //london se plugin (master)
     //implementation( group: 'org.eclipse.keyple', name: 'keyple-plugin-remotese-plugin', version: '0.+',changing: true){
     //    exclude group: 'org.slf4j', module: 'slf4j-simple'
@@ -47,7 +49,6 @@ dependencies {
     implementation project(path: ':java:example:calypso:example-calypso-common')
 
     implementation project(path: ":java:example:calypso:example-remotese")
-
 
     implementation project(path: ":java:example:calypso:example-remotese")
 

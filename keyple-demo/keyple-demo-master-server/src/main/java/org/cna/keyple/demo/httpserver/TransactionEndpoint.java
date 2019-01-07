@@ -1,9 +1,10 @@
-package org.cna.keyple.demo;
+package org.cna.keyple.demo.httpserver;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import org.cna.keyple.demo.httpserver.transaction.SaleTransactionManager;
 import org.eclipse.keyple.plugin.remotese.transport.json.JsonParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,14 +16,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
-public class TicketEndpoint implements HttpHandler {
+public class TransactionEndpoint implements HttpHandler {
 
-    private final Logger logger = LoggerFactory.getLogger(TicketEndpoint.class);
+    private final Logger logger = LoggerFactory.getLogger(TransactionEndpoint.class);
 
-    TicketService ticketService;
+    SaleTransactionManager saleTransactionManager;
 
-    TicketEndpoint(TicketService ticketService ){
-        this.ticketService = ticketService ;
+    TransactionEndpoint(SaleTransactionManager saleTransactionManager){
+        this.saleTransactionManager = saleTransactionManager ;
     }
 
     @Override
@@ -50,18 +51,11 @@ public class TicketEndpoint implements HttpHandler {
             JsonObject obj = JsonParser.getGson().fromJson(body, JsonObject.class);
 
             JsonElement ticketNumberToLoad = obj.get("ticketNumber");
-            JsonElement operation = obj.get("operation");
 
             Integer availableTicket;
 
-            if(operation.getAsString().equals("+")){
-                availableTicket = ticketService.increaseTicketNumber(ticketNumberToLoad.getAsInt(), sessionId);
-            }else{
-                availableTicket = ticketService.decreaseTicketNumber(ticketNumberToLoad.getAsInt(), sessionId);
-            }
 
             JsonObject resp = new JsonObject();
-            resp.addProperty("availableTicket", availableTicket);
 
             String responseBody = resp.getAsString();
             Integer responseCode = 200;
@@ -73,25 +67,6 @@ public class TicketEndpoint implements HttpHandler {
             logger.debug("Outcoming Response Code {} ", responseCode);
             logger.debug("Outcoming Response Body {} ", responseBody);
 
-        } else if (requestMethod.equals("GET")) {
-
-            Integer availableTicket = ticketService.readTicketNumber(sessionId);
-
-            JsonObject resp = new JsonObject();
-            resp.addProperty("availableTicket", availableTicket);
-
-            String responseBody = resp.getAsString();
-            Integer responseCode = 200;
-            t.getResponseHeaders().add("Content-Type", "application/json");
-            t.sendResponseHeaders(responseCode, responseBody.length());
-            OutputStream os = t.getResponseBody();
-            os.write(responseBody.getBytes());
-            os.close();
-            logger.debug("Outcoming Response Code {} ", responseCode);
-            logger.debug("Outcoming Response Body {} ", responseBody);
-
-        } else {
-            logger.error("Method not recognized");
         }
     }
 
