@@ -32,7 +32,7 @@ public class TicketingSessionManager {
         throw new KeypleReaderNotFoundException(poReaderName);
     }
 
-    public TicketingSession getTicketingSession(String poReaderName) throws KeypleReaderNotFoundException {
+    TicketingSession getTicketingSession(String poReaderName) throws KeypleReaderNotFoundException {
         for(TicketingSession ticketingSession: ticketingSessions) {
             if(ticketingSession.getPoReader().getName().equals(poReaderName)) {
                 return ticketingSession;

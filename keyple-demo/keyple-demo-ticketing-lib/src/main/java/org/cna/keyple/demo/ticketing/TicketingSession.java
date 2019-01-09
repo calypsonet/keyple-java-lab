@@ -28,7 +28,7 @@ public class TicketingSession {
     public final static int STATUS_UNKNOWN_ERROR = 1;
     public final static int STATUS_CARD_SWITCHED = 2;
     public final static int STATUS_SESSION_ERROR = 3;
-    private MatchingSe mifareClassic, bankingCard;
+    private MatchingSe mifareClassic, mifareDesfire, bankingCard;
     private CalypsoPo calypsoPo;
     private SeSelection seSelection;
     private ReadRecordsRespPars readEventLogParser, readEnvironmentHolderParser, readCounterParser, readContractParser;
@@ -36,7 +36,7 @@ public class TicketingSession {
     private CardContent cardContent;
     private final SeReader poReader, samReader;
     private byte[] currentPoSN;
-    final Logger logger = LoggerFactory.getLogger(TicketingSession.class);
+    final Logger logger = (Logger) LoggerFactory.getLogger(TicketingSession.class);
 
     private String pad(String text, char c, int length) {
         StringBuffer sb = new StringBuffer(length);
@@ -99,19 +99,28 @@ public class TicketingSession {
         calypsoPo = (CalypsoPo) seSelection.prepareSelection(calypsoPoSelector);
 
         /* Select Mifare Classic PO */
-        PoSelector mifareClassicSelector = new PoSelector(".*", ChannelState.CLOSE_AFTER,
+        SeSelector mifareClassicSelector = new SeSelector(".*", ChannelState.CLOSE_AFTER,
                 ContactlessProtocols.PROTOCOL_MIFARE_CLASSIC, "Mifare classic");
 
         /*
          * Add the selection case to the current selection (we could have added other cases here)
          */
-        mifareClassic = seSelection.prepareSelection(mifareClassicSelector);
+        mifareClassic = (MatchingSe) seSelection.prepareSelection(mifareClassicSelector);
 
-        PoSelector bankingSelector = new PoSelector(ByteArrayUtils.fromHex("325041592e5359532e4444463031"),
+        /* Select Mifare Desfire PO */
+        SeSelector mifareDesfireSelector = new SeSelector(".*", ChannelState.CLOSE_AFTER,
+                ContactlessProtocols.PROTOCOL_MIFARE_DESFIRE, "Mifare desfire");
+
+        /*
+         * Add the selection case to the current selection (we could have added other cases here)
+         */
+        mifareDesfire = (MatchingSe) seSelection.prepareSelection(mifareDesfireSelector);
+
+        SeSelector bankingSelector = new SeSelector(ByteArrayUtils.fromHex("325041592e5359532e4444463031"),
                 SeSelector.SelectMode.FIRST, ChannelState.CLOSE_AFTER,
                 ContactlessProtocols.PROTOCOL_ISO14443_4, "Visa");
 
-        bankingCard = seSelection.prepareSelection(bankingSelector);
+        bankingCard = (MatchingSe) seSelection.prepareSelection(bankingSelector);
 
         /*
          * Provide the SeReader with the selection operation to be processed when a PO is inserted.
@@ -123,25 +132,27 @@ public class TicketingSession {
 
     public boolean processDefaultSelection(SelectionResponse selectionResponse) {
         boolean selectionStatus;
-        logger.info("Resets MatchingSe objects.");
         if(calypsoPo == null) {
             logger.error("calypsoPo is null.");
         }
         if(mifareClassic == null) {
             logger.error("mifareClassic is null.");
         }
+        if(mifareDesfire == null) {
+            logger.error("mifareDesfire is null.");
+        }
         if(bankingCard == null) {
             logger.error("bankingCard is null.");
         }
-
-
-        logger.info("selectionResponse = {}", selectionResponse.getSelectionSeResponseSet());
-
+        logger.info("selectionResponse");
+        logger.info("selectionResponse = {}", selectionResponse);
         selectionStatus = seSelection.processDefaultSelection(selectionResponse);
         if(calypsoPo.isSelected()) {
             poTypeName = "CALYPSO";
         } else if(mifareClassic.getSelectionSeResponse() != null && mifareClassic.getSelectionSeResponse().getSelectionStatus().hasMatched()) {
-            poTypeName = "MIFARE";
+            poTypeName = "MIFARE Classic";
+        } else if(mifareDesfire.getSelectionSeResponse() != null && mifareDesfire.getSelectionSeResponse().getSelectionStatus().hasMatched()) {
+            poTypeName = "MIFARE Desfire";
         } else if(bankingCard.getSelectionSeResponse() != null &&  bankingCard.getSelectionSeResponse().getSelectionStatus().hasMatched()) {
             poTypeName = "EMV";
         } else {
@@ -162,7 +173,6 @@ public class TicketingSession {
     public String getPoIdentification() {
         return ByteArrayUtils.toHex(calypsoPo.getApplicationSerialNumber()) + ", " + calypsoPo.getRevision().toString();
     }
-
 
     /**
      * do the personalization of the PO according to the specified profile
@@ -210,7 +220,6 @@ public class TicketingSession {
         } catch (KeypleReaderException e) {
             e.printStackTrace();
         }
-        //calypsoPo.reset();
 
         return poProcessStatus;
     }
@@ -249,7 +258,62 @@ public class TicketingSession {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyMMdd HH:mm:ss");
         String dateTime = LocalDateTime.now().format(formatter);
 
-        String event = pad(dateTime + " OP = +" + ticketNumber, ' ', 29);
+        String event = "";
+        if(ticketNumber > 0) {
+            event = pad(dateTime + " OP = +" + ticketNumber, ' ', 29);
+        } else {
+            event = pad(dateTime + " T1", ' ', 29);
+        }
+
+        poTransaction.prepareAppendRecordCmd(CalypsoInfo.SFI_EventLog, event.getBytes(), "Event: " + event);
+
+        poProcessStatus = poTransaction.processClosing(TransmissionMode.CONTACTLESS,
+                ChannelState.CLOSE_AFTER);
+
+        if(!poProcessStatus) {
+            return STATUS_SESSION_ERROR;
+        }
+
+        return STATUS_OK;
+    }
+
+
+    /**
+     * Load a season ticket contract
+     * @return
+     * @throws KeypleReaderException
+     */
+    public int loadContract() throws KeypleReaderException {
+        PoTransaction poTransaction = new PoTransaction(poReader, calypsoPo,
+                samReader, CalypsoInfo.getSamSettings());
+
+        if(!Arrays.equals(currentPoSN, calypsoPo.getApplicationSerialNumber())) {
+            return STATUS_CARD_SWITCHED;
+        }
+
+        boolean poProcessStatus = false;
+        poProcessStatus = poTransaction.processOpening(
+                PoTransaction.ModificationMode.ATOMIC,
+                PoTransaction.SessionAccessLevel.SESSION_LVL_LOAD, (byte) 0, (byte) 0);
+
+        if(!poProcessStatus) {
+            return STATUS_SESSION_ERROR;
+        }
+
+        /* allow to determine the anticipated response */
+        poTransaction.prepareReadRecordsCmd(CalypsoInfo.SFI_Counter,
+                ReadDataStructure.MULTIPLE_COUNTER, CalypsoInfo.RECORD_NUMBER_1,
+                String.format("Counter (SFI=%02X))",
+                        CalypsoInfo.SFI_Counter));
+        poTransaction.processPoCommands(ChannelState.KEEP_OPEN);
+
+        poTransaction.prepareUpdateRecordCmd(CalypsoInfo.SFI_Contracts, CalypsoInfo.RECORD_NUMBER_1,
+                pad("1 MONTH SEASON TICKET", ' ', 29).getBytes(), "Contract: 1 MONTH SEASON TICKET");
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyMMdd HH:mm:ss");
+        String dateTime = LocalDateTime.now().format(formatter);
+
+        String event = pad(dateTime + " OP = +ST", ' ', 29);
 
         poTransaction.prepareAppendRecordCmd(CalypsoInfo.SFI_EventLog, event.getBytes(), "Event: " + event);
 
