@@ -9,7 +9,7 @@
         sdfsadf
     </appender>
 
-    <appender name="KEYPLEPCAPPENDER" class="org.keyple.demo.app_parking.utils.StaticOutputStreamAppender">
+    <appender name="KEYPLEPCAPPENDER" class="org.cna.keyple.demo.app_parking.utils.StaticOutputStreamAppender">
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
             <level>ALL</level>
         </filter>
