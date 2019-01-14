@@ -123,7 +123,7 @@ public class TicketingSession {
 
     public boolean processDefaultSelection(SelectionResponse selectionResponse) {
         boolean selectionStatus;
-        logger.info("Resets MatchingSe objects.");
+        //logger.info("Resets MatchingSe objects.");
         if(calypsoPo == null) {
             logger.error("calypsoPo is null.");
         }
@@ -289,5 +289,14 @@ public class TicketingSession {
             status = true;
         }
         return status;
+    }
+
+    @Override
+    public String toString() {
+        return "poReader:"+ poReader.getName() + "- samReader:"+samReader.getName()
+                + " - cardContent:"
+                + this.getCardContent() !=null ? cardContent.toString() : "null"
+                + " - PoTypeName:"
+                + this.getPoTypeName() !=null ? cardContent.getPoTypeName() : "null";
     }
 }
