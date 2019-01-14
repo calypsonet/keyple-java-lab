@@ -1,0 +1,135 @@
+buildscript {
+    dependencies {
+        classpath group: 'de.dynamicfiles.projects.gradle.plugins', name: 'javafx-gradle-plugin', version: '8.8.2'
+    }
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        google()
+        jcenter()
+    }
+}
+
+allprojects {
+
+    configurations.all {
+        // check for updates every build
+        resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+    }
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        google()
+        jcenter()
+    }
+}
+
+apply plugin: 'idea'
+apply plugin: 'java'
+apply plugin: 'javafx-gradle-plugin'
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    google()
+    jcenter()
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+
+    implementation project(path:':java:component:keyple-calypso')
+
+    implementation project(path:':java:component:keyple-core')
+
+    implementation project(path:':keyple-demo:keyple-demo-ticketing-lib')
+
+    implementation project(path:':java:component:keyple-plugin:keyple-plugin-pcsc')
+
+    implementation group: 'ch.qos.logback', name: 'logback-core', version: '1.2.3'
+    implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
+}
+
+sourceSets {
+    main {
+        resources {
+            srcDirs = ['src/main/java', 'src/main/resources', 'config']
+            includes = ['**/*.fxml', '**/*.css', '**/*.png', '**/logback.xml']
+        }
+    }
+}
+
+
+jfx {
+    verbose = true
+    mainClass = "org.cna.keyple.demo.apppc.Main"
+    jfxAppOutputDir = "build/jfx/app"
+    jfxMainAppJarName = "keyple-demo-sales-pc.jar"
+    deployDir = "src/main/deploy"
+    useEnvironmentRelativeExecutables = true
+    libFolderName = "lib"
+
+    // gradle jfxJar
+    css2bin = false
+    preLoader = null // String
+    updateExistingJar = false
+    allPermissions = false
+    manifestAttributes = null // Map<String, String>
+    addPackagerJar = true
+    copyAdditionalAppResourcesToJar = true
+    skipCopyingDependencies = false
+    useLibFolderContentForManifestClasspath = true
+    fixedManifestClasspath = null // "keyple-calypso-1.0.0-RC4.jar keyple-core-1.0.0-RC4.jar keyple-plugin-pcsc-1.0.0-RC4.jar logback-classic-1.2.3.jar logback-core-1.2.3.jar slf4j-api-1.7.25.jar slf4j-ext-1.7.25.jar keyple-demo-ticketing-lib-0.11.0-SNAPSHOT.jar"
+
+    // gradle jfxNative
+    identifier = null  // String - setting this for windows-bundlers makes it possible to generate upgradeable installers (using same GUID)
+    vendor = "Calypso Networks Association"
+    nativeOutputDir = "out/artifacts/native"
+    bundler = "windows.app" // set this to some specific, if your don't want all bundlers running, examples "windows.app", "jnlp", ...
+    jvmProperties = null // Map<String, String>
+    jvmArgs = null // List<String>
+    userJvmArgs = null // Map<String, String>
+    launcherArguments = null // List<String>
+    nativeReleaseVersion = "1.0"
+    needShortcut = false
+    needMenu = false
+    bundleArguments = [
+        // bundle JRE
+        runtime: 'C:\\Program Files\\Java\\jdk1.8.0_191\\jre'
+    ]
+    appName = "keyple-demo-sales" // this is used for files below "src/main/deploy", e.g. "src/main/deploy/package/windows/project.ico"
+    additionalBundlerResources = null // path to some additional resources for the bundlers when creating application-bundle
+    additionalAppResources = "libs" // path to some additional resources when creating application-bundle
+    fileAssociations = null // List<Map<String, Object>>
+    noBlobSigning = false // when using bundler "jnlp", you can choose to NOT use blob signing
+    customBundlers = null // List<String>
+    failOnError = false
+    onlyCustomBundlers = false
+    skipJNLP = false
+    skipNativeVersionNumberSanitizing = false // anything than numbers or dots are removed
+    additionalJarsignerParameters = null // List<String>
+    skipMainClassScanning = false // set to true might increase build-speed
+
+    skipNativeLauncherWorkaround124 = false
+    skipNativeLauncherWorkaround167 = false
+    skipNativeLauncherWorkaround205 = false
+    skipJNLPRessourcePathWorkaround182 = true
+    skipSigningJarFilesJNLP185 = false
+    skipSizeRecalculationForJNLP185 = false
+    skipMacBundlerWorkaround = false
+
+    // gradle jfxRun
+    runJavaParameter = null // String
+    runAppParameter = null // String
+
+    // per default the outcome of the gradle "jarTask" will be used, set this to specify otherwise (like proguard-output)
+    alternativePathToJarFile = null // String
+
+    // to disable patching of ant-javafx.jar, set this to false
+    usePatchedJFXAntLib = true
+
+    // making it able to support absolute paths, defaults to "false" for maintaining old behaviour
+    checkForAbsolutePaths = false
+}
