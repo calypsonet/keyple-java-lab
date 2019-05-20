@@ -57,19 +57,4 @@ public class CalypsoInfo {
 
     public final static String eventLog_dataFill =
             "00112233445566778899AABBCCDDEEFF00112233445566778899AABBCC";
-
-    public static EnumMap<PoTransaction.SamSettings, Byte> getSamSettings() {
-        /* define the SAM parameters to provide when creating PoTransaction */
-        return new EnumMap<PoTransaction.SamSettings, Byte>(PoTransaction.SamSettings.class) {
-            {
-                put(PoTransaction.SamSettings.SAM_DEFAULT_KIF_PERSO,
-                        PoTransaction.DEFAULT_KIF_PERSO);
-                put(PoTransaction.SamSettings.SAM_DEFAULT_KIF_LOAD, PoTransaction.DEFAULT_KIF_LOAD);
-                put(PoTransaction.SamSettings.SAM_DEFAULT_KIF_DEBIT,
-                        PoTransaction.DEFAULT_KIF_DEBIT);
-                put(PoTransaction.SamSettings.SAM_DEFAULT_KEY_RECORD_NUMBER,
-                        PoTransaction.DEFAULT_KEY_RECORD_NUMER);
-            }
-        };
-    }
 }

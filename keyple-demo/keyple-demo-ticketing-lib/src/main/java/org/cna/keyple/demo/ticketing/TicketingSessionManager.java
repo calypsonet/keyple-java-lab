@@ -1,7 +1,8 @@
 package org.cna.keyple.demo.ticketing;
 
-import org.eclipse.keyple.seproxy.SeReader;
-import org.eclipse.keyple.seproxy.exception.KeypleReaderNotFoundException;
+import org.eclipse.keyple.calypso.transaction.SamResource;
+import org.eclipse.keyple.core.seproxy.SeReader;
+import org.eclipse.keyple.core.seproxy.exception.KeypleReaderNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,18 +15,18 @@ public class TicketingSessionManager {
 
 
     List<TicketingSession> ticketingSessions;
-    private final SeReader samReader;
+    private final SamResource samResource;
 
-    public TicketingSessionManager(SeReader samReader) {
+    public TicketingSessionManager(SamResource samResource) {
         logger.info("Initialize TicketingSessionManager");
-        this.samReader = samReader;
+        this.samResource = samResource;
         ticketingSessions = new ArrayList<TicketingSession>();
     }
 
 
     public TicketingSession createTicketingSession(SeReader poReader) {
         logger.debug("Create a new TicketingSession for reader {}", poReader);
-        TicketingSession ticketingSession = new TicketingSession(poReader, samReader);
+        TicketingSession ticketingSession = new TicketingSession(poReader, samResource);
         ticketingSessions.add(ticketingSession);
         return ticketingSession;
     }

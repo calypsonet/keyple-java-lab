@@ -17,33 +17,37 @@ import org.cna.keyple.demo.ticketing.CalypsoInfo;
 import org.cna.keyple.demo.ticketing.CardContent;
 import org.cna.keyple.demo.ticketing.TicketingSession;
 import org.cna.keyple.demo.ticketing.TicketingSessionManager;
+import org.eclipse.keyple.calypso.transaction.CalypsoSam;
+import org.eclipse.keyple.calypso.transaction.SamResource;
+import org.eclipse.keyple.calypso.transaction.SamSelectionRequest;
+import org.eclipse.keyple.calypso.transaction.SamSelector;
+import org.eclipse.keyple.core.selection.SeSelection;
+import org.eclipse.keyple.core.selection.SelectionsResult;
+import org.eclipse.keyple.core.seproxy.ChannelState;
+import org.eclipse.keyple.core.seproxy.SeProxyService;
+import org.eclipse.keyple.core.seproxy.SeReader;
+import org.eclipse.keyple.core.seproxy.SeSelector;
+import org.eclipse.keyple.core.seproxy.event.ObservablePlugin;
+import org.eclipse.keyple.core.seproxy.event.ObservableReader;
+import org.eclipse.keyple.core.seproxy.event.PluginEvent;
+import org.eclipse.keyple.core.seproxy.event.ReaderEvent;
+import org.eclipse.keyple.core.seproxy.exception.KeypleBaseException;
+import org.eclipse.keyple.core.seproxy.exception.KeyplePluginNotFoundException;
+import org.eclipse.keyple.core.seproxy.exception.KeypleReaderException;
+import org.eclipse.keyple.core.seproxy.exception.KeypleReaderNotFoundException;
+import org.eclipse.keyple.core.seproxy.protocol.SeCommonProtocols;
 import org.eclipse.keyple.plugin.pcsc.PcscPlugin;
 import org.eclipse.keyple.plugin.pcsc.PcscProtocolSetting;
 import org.eclipse.keyple.plugin.pcsc.PcscReader;
-import org.eclipse.keyple.seproxy.ChannelState;
-import org.eclipse.keyple.seproxy.SeProxyService;
-import org.eclipse.keyple.seproxy.SeReader;
-import org.eclipse.keyple.seproxy.event.ObservablePlugin;
-import org.eclipse.keyple.seproxy.event.ObservablePlugin.PluginObserver;
-import org.eclipse.keyple.seproxy.event.ObservableReader;
-import org.eclipse.keyple.seproxy.event.ObservableReader.ReaderObserver;
-import org.eclipse.keyple.seproxy.event.PluginEvent;
-import org.eclipse.keyple.seproxy.event.ReaderEvent;
-import org.eclipse.keyple.seproxy.exception.*;
-import org.eclipse.keyple.seproxy.protocol.Protocol;
-import org.eclipse.keyple.seproxy.protocol.SeProtocolSetting;
-import org.eclipse.keyple.transaction.SeSelection;
-import org.eclipse.keyple.transaction.SeSelector;
 import org.slf4j.LoggerFactory;
 
 import java.io.OutputStream;
 import java.net.URL;
-import java.util.Optional;
-import java.util.ResourceBundle;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
+
+import static org.eclipse.keyple.calypso.command.sam.SamRevision.C1;
 
 public class Controller implements Initializable {
     private final static String PREF_PO_READER_FILTER = "PO_READER_FILTER";
@@ -354,7 +358,7 @@ public class Controller implements Initializable {
         /* clear message */
         displayMessage("", 0);
         if (readerEvent != null) {
-            if (readerEvent.getEventType().equals(ReaderEvent.EventType.SE_INSERTED)) {
+            if (/*readerEvent.getEventType().equals(ReaderEvent.EventType.SE_INSERTED)||*/readerEvent.getEventType().equals(ReaderEvent.EventType.SE_MATCHED)) {
                 if (appState == AppState.WAIT_SYSTEM_READY) {
                     return;
                 }
@@ -365,7 +369,8 @@ public class Controller implements Initializable {
                 }
                 imgAuthorized.setVisible(false);
                 imgUnauthorized.setVisible(false);
-                if (!ticketingSession.processDefaultSelection(readerEvent.getDefaultSelectionResponse())) {
+                SelectionsResult selectionsResult = ticketingSession.processDefaultSelection(readerEvent.getDefaultSelectionsResponse());
+                if (!selectionsResult.hasActiveSelection()) {
                     logger.error("PO Not selected");
                     imgUnauthorized.setVisible(true);
                     displayStatus("Card not supported in this demo");
@@ -406,7 +411,7 @@ public class Controller implements Initializable {
                 break;
             case CARD_STATUS:
                 currentAppState = AppState.CARD_STATUS;
-                if (readerEvent != null && readerEvent.getEventType().equals(ReaderEvent.EventType.SE_INSERTED)) {
+                if (readerEvent != null && readerEvent.getEventType().equals(ReaderEvent.EventType.SE_MATCHED)) {
                     try {
                         if (ticketingSession.analyzePoProfile()) {
                             displayCardInfo(ticketingSession.getCardContent());
@@ -418,33 +423,41 @@ public class Controller implements Initializable {
                             logger.info("Contract = {}", contract);
                             if(contract.isEmpty() || contract.contains("NO CONTRACT") || !contract.contains(
                                     "SEASON")) {
-                                imgUnauthorized.setVisible(true);
-                                displayStatus("No Valid Pass\nPlease pay the parking fees\nor reload your " +
-                                        "transportation card.");
+                                switch (ticketingSession.loadTickets(0)) {
+                                    case TicketingSession.STATUS_OK:
+                                        imgAuthorized.setVisible(true);
+                                        displayStatus("1 ticket debited.");
+                                        break;
+                                    case TicketingSession.STATUS_UNKNOWN_ERROR:
+                                    case TicketingSession.STATUS_CARD_SWITCHED:
+                                        imgUnauthorized.setVisible(true);
+                                        displayStatus("Not able to find a season pass or debit a ticket.");
+                                        break;
+                                    case TicketingSession.STATUS_SESSION_ERROR:
+                                        imgUnauthorized.setVisible(true);
+                                        displayStatus("Secure Session error");
+                                        break;
+                                }
                             } else {
                                 imgAuthorized.setVisible(true);
                                 displayStatus("Valid Season Pass: " + contract + "\nFree Access until the " +
                                         "validity end date.");
-                            }
-                            switch (ticketingSession.loadTickets(0)) {
-                                case TicketingSession.STATUS_OK:
-                                    break;
-                                case TicketingSession.STATUS_UNKNOWN_ERROR:
-                                case TicketingSession.STATUS_CARD_SWITCHED:
-                                    imgUnauthorized.setVisible(true);
-                                    displayStatus("Unknown error");
-                                    break;
-                                case TicketingSession.STATUS_SESSION_ERROR:
-                                    imgUnauthorized.setVisible(true);
-                                    displayStatus("Secure Session error");
-                                    break;
+                                switch (ticketingSession.loadTickets(0)) {
+                                    case TicketingSession.STATUS_OK:
+                                        break;
+                                    case TicketingSession.STATUS_UNKNOWN_ERROR:
+                                    case TicketingSession.STATUS_CARD_SWITCHED:
+                                        imgUnauthorized.setVisible(true);
+                                        displayStatus("Unknown error");
+                                        break;
+                                    case TicketingSession.STATUS_SESSION_ERROR:
+                                        imgUnauthorized.setVisible(true);
+                                        displayStatus("Secure Session error");
+                                        break;
+                                }
                             }
                         }
-                    } catch (KeypleReaderException e) {
-                        imgUnauthorized.setVisible(true);
-                        displayStatus("Communication error");
-                        e.printStackTrace();
-                    } catch (IllegalStateException e) {
+                    } catch (IllegalStateException | KeypleReaderException e) {
                         imgUnauthorized.setVisible(true);
                         displayStatus("Communication error");
                         e.printStackTrace();
@@ -479,14 +492,17 @@ public class Controller implements Initializable {
             reader.setParameter(PcscReader.SETTING_KEY_LOGGING, "true");
             reader.setParameter(PcscReader.SETTING_KEY_PROTOCOL, PcscReader.SETTING_PROTOCOL_T1);
             /* Set the PO reader protocol flag for ISO14443 */
-            reader.addSeProtocolSetting(
-                    new SeProtocolSetting(PcscProtocolSetting.SETTING_PROTOCOL_ISO14443_4));
+            reader.addSeProtocolSetting(SeCommonProtocols.PROTOCOL_ISO14443_4,
+                    PcscProtocolSetting.PCSC_PROTOCOL_SETTING
+                            .get(SeCommonProtocols.PROTOCOL_ISO14443_4));
             /* Set the PO reader protocol flag for Mifare Classic */
-            reader.addSeProtocolSetting(
-                    new SeProtocolSetting(PcscProtocolSetting.SETTING_PROTOCOL_MIFARE_CLASSIC));
+            reader.addSeProtocolSetting(SeCommonProtocols.PROTOCOL_MIFARE_CLASSIC,
+                    PcscProtocolSetting.PCSC_PROTOCOL_SETTING
+                            .get(SeCommonProtocols.PROTOCOL_MIFARE_CLASSIC));
             /* Set the PO reader protocol flag for Mifare Desfire */
-            reader.addSeProtocolSetting(
-                    new SeProtocolSetting(PcscProtocolSetting.SETTING_PROTOCOL_MIFARE_DESFIRE));
+            reader.addSeProtocolSetting(SeCommonProtocols.PROTOCOL_MIFARE_DESFIRE,
+                    PcscProtocolSetting.PCSC_PROTOCOL_SETTING
+                            .get(SeCommonProtocols.PROTOCOL_MIFARE_DESFIRE));
             /* change appState if both readers are readersReady */
             if (ticketingSessionManager != null) {
                 ticketingSession = ticketingSessionManager.createTicketingSession(reader);
@@ -534,6 +550,9 @@ public class Controller implements Initializable {
             try {
                 samReader.setParameter(PcscReader.SETTING_KEY_LOGGING, "true");
                 samReader.setParameter(PcscReader.SETTING_KEY_PROTOCOL, PcscReader.SETTING_PROTOCOL_T0);
+                samReader.addSeProtocolSetting(SeCommonProtocols.PROTOCOL_ISO7816_3,
+                        PcscProtocolSetting.PCSC_PROTOCOL_SETTING
+                                .get(SeCommonProtocols.PROTOCOL_ISO7816_3));
             } catch (KeypleBaseException e) {
                 e.printStackTrace();
             }
@@ -610,28 +629,31 @@ public class Controller implements Initializable {
      *
      * @param samReader
      */
-    public static void checkSamAndOpenChannel(SeReader samReader) {
+    public static CalypsoSam checkSamAndOpenChannel(SeReader samReader) {
         /*
          * check the availability of the SAM doing a ATR based selection, open its physical and
          * logical channels and keep it open
          */
-        SeSelection samSelection = new SeSelection(samReader);
+        SeSelection samSelection = new SeSelection();
 
-        SeSelector samSelector = new SeSelector(CalypsoInfo.SAM_C1_ATR_REGEX,
-                ChannelState.KEEP_OPEN, Protocol.ANY, "Selection SAM C1");
+        SamSelector samSelector = new SamSelector(C1, null, "Selection SAM C1");
 
         /* Prepare selector, ignore MatchingSe here */
-        samSelection.prepareSelection(samSelector);
+        samSelection.prepareSelection(new SamSelectionRequest(samSelector, ChannelState.KEEP_OPEN));
+
+        CalypsoSam calypsoSam;
 
         try {
-            if (!samSelection.processExplicitSelection()) {
+            calypsoSam = (CalypsoSam) samSelection.processExplicitSelection(samReader)
+                    .getActiveSelection().getMatchingSe();
+            if (!calypsoSam.isSelected()) {
                 throw new IllegalStateException("Unable to open a logical channel for SAM!");
-            } else {
             }
         } catch (KeypleReaderException e) {
             throw new IllegalStateException("Reader exception: " + e.getMessage());
 
         }
+        return calypsoSam;
     }
 
     /**
@@ -675,58 +697,62 @@ public class Controller implements Initializable {
     /**
      * handle the plugin events
      */
-    private class PcscPluginObserver implements PluginObserver {
+    private class PcscPluginObserver implements ObservablePlugin.PluginObserver {
 
         @Override
         public void update(PluginEvent pluginEvent) {
             SeReader reader = null;
             logger.info("PluginEvent: PLUGINNAME = {}, READERNAME = {}, EVENTTYPE = {}",
-                    pluginEvent.getPluginName(), pluginEvent.getReaderName(), pluginEvent.getEventType());
+                    pluginEvent.getPluginName(), pluginEvent.getReaderNames().first(), pluginEvent.getEventType());
 
             try {
-                reader = SeProxyService.getInstance().getPlugin(pluginEvent.getPluginName())
-                        .getReader(pluginEvent.getReaderName());
-                switch (pluginEvent.getEventType()) {
-                    case READER_CONNECTED:
-                        logger.info("New reader! READERNAME = {}", reader.getName());
-                        try {
-                            String filter = txtPoReaderFilter.getText();
-                            Pattern p = Pattern.compile(".*" + filter + ".*");
-                            if (filter.length() > 0 && p.matcher(reader.getName()).matches()) {
-                                initializePoReader(reader);
-                            } else {
-                                filter = txtSamReaderFilter.getText();
-                                p = Pattern.compile(".*" + filter + ".*");
+                SortedSet<String> readerNames = pluginEvent.getReaderNames();
+
+                for(String readerName: readerNames) {
+                    reader = SeProxyService.getInstance().getPlugin(pluginEvent.getPluginName())
+                            .getReader(readerName);
+                    switch (pluginEvent.getEventType()) {
+                        case READER_CONNECTED:
+                            logger.info("New reader! READERNAME = {}", reader.getName());
+                            try {
+                                String filter = txtPoReaderFilter.getText();
+                                Pattern p = Pattern.compile(".*" + filter + ".*");
                                 if (filter.length() > 0 && p.matcher(reader.getName()).matches()) {
-                                    initializeSamReader(reader);
+                                    initializePoReader(reader);
                                 } else {
-                                    String ignoredReaders = pref.get(PREF_IGNORE_READER_FILTER, "");
-                                    if(!ignoredReaders.contains(reader.getName())) {
-                                        // ask for assignment if not in ignore list
-                                        assignReaderRole(reader);
+                                    filter = txtSamReaderFilter.getText();
+                                    p = Pattern.compile(".*" + filter + ".*");
+                                    if (filter.length() > 0 && p.matcher(reader.getName()).matches()) {
+                                        initializeSamReader(reader);
+                                    } else {
+                                        String ignoredReaders = pref.get(PREF_IGNORE_READER_FILTER, "");
+                                        if (!ignoredReaders.contains(reader.getName())) {
+                                            // ask for assignment if not in ignore list
+                                            assignReaderRole(reader);
+                                        }
                                     }
                                 }
+                            } catch (KeypleBaseException e) {
+                                e.printStackTrace();
                             }
-                        } catch (KeypleBaseException e) {
-                            e.printStackTrace();
-                        }
-                        break;
+                            break;
 
-                    case READER_DISCONNECTED:
-                        logger.info("Reader removed. READERNAME = {}", pluginEvent.getReaderName());
-                        if (poReaderName.equals(reader.getName())) {
-                            deInitializePoReader(reader);
-                        } else {
-                            if (samReader != null && samReader.getName().equals(reader.getName())) {
-                                deInitializeSamReader(reader);
+                        case READER_DISCONNECTED:
+                            logger.info("Reader removed. READERNAME = {}", pluginEvent.getReaderNames().first());
+                            if (poReaderName.equals(reader.getName())) {
+                                deInitializePoReader(reader);
+                            } else {
+                                if (samReader != null && samReader.getName().equals(reader.getName())) {
+                                    deInitializeSamReader(reader);
+                                }
                             }
-                        }
-                        break;
+                            break;
 
-                    default:
-                        logger.info("Unexpected reader event. EVENT = {}",
-                                pluginEvent.getEventType().getName());
-                        break;
+                        default:
+                            logger.info("Unexpected reader event. EVENT = {}",
+                                    pluginEvent.getEventType().getName());
+                            break;
+                    }
                 }
             } catch (KeyplePluginNotFoundException e) {
                 e.printStackTrace();
@@ -739,7 +765,7 @@ public class Controller implements Initializable {
     /**
      * handle the PO reader events
      */
-    private class PoReaderObserver implements ReaderObserver {
+    private class PoReaderObserver implements ObservableReader.ReaderObserver {
 
         @Override
         public void update(ReaderEvent readerEvent) {
@@ -751,16 +777,16 @@ public class Controller implements Initializable {
     /**
      * handle the SAM reader events
      */
-    private class SamReaderObserver implements ReaderObserver {
+    private class SamReaderObserver implements ObservableReader.ReaderObserver {
 
         @Override
         public void update(ReaderEvent readerEvent) {
             logger.info("SAM Reader event = {}", readerEvent.getEventType());
             if (readerEvent.getEventType() == ReaderEvent.EventType.SE_INSERTED) {
                 /* SAM open logical channel */
-                checkSamAndOpenChannel(samReader);
                 logger.debug("Create TicketingSessionManager");
-                ticketingSessionManager = new TicketingSessionManager(samReader);
+                ticketingSessionManager = new TicketingSessionManager(new SamResource(samReader,
+                        checkSamAndOpenChannel(samReader)));
                 if(ticketingSessionManager == null) {
                     logger.error("Creation of ticketingSessionManager failed");
                 }
